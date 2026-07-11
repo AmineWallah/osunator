@@ -1,0 +1,15 @@
+[project]
+name = "osunator"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "aiohttp>=3.14.1",
+    "matplotlib>=3.10.9",
+    "osrparse==6.0.2",
+    "ossapi==5.3.5",
+    "pandas>=2.3.3",
+    "python-dotenv>=1.2.2",
+    "slider>=0.8.4",
+    "tensorflow[and-cuda]>=2.21.0",
+    "tqdm>=4.68.3",
+]

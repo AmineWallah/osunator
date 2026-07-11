@@ -1,0 +1,25 @@
+# artifacts
+*.keras
+*.osr
+*.npz
+*.png
+*.log
+*.txt
+cache.json
+
+# data dirs (adjust names to your config.py reality)
+features/
+players/
+suitable/
+corrupt/
+unresolved/
+osu_files/
+kaggle_dataset/
+maps/
+replays/
+
+# env
+.venv/
+__pycache__/
+/.env
+
