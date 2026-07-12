@@ -11,7 +11,7 @@ from mdn import CorrelatedSampler
 from osrparse import Replay
 from osrparse.utils import ReplayEventOsu, Key, Mod, GameMode
 from datetime import datetime, timezone
-BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/781509 Vickeblanka - Black Rover (TV Size) [no video]/Vickeblanka - Black Rover (TV Size) (Sotarks) [Extreme].osu"   # set this to a real .osu file on your machine
+BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/889855 GALNERYUS - RAISE MY SWORD/GALNERYUS - RAISE MY SWORD (Sotarks) [A THOUSAND FLAMES].osu"   # set this to a real .osu file on your machine
 MODEL_PATH = 'best_model.keras'
 OUTPUT_REPLAY_PATH = 'generated.osr'
 ONSET_THR = 0.35
@@ -81,6 +81,25 @@ def generate_replay(model, beatmap, stats, start_x=256.0, start_y=192.0, tempera
         'pred_key_offset': np.array(pred_key_offset),
     }
 
+def full_alternate(grid_length, onset_prob, offset_prob,
+                   onset_thr=ONSET_THR, release_thr=RELEASE_THR, cooldown=COOLDOWN_TICKS):
+    press_now = onset_prob.max(axis=1) > onset_thr
+    release_now = offset_prob.max(axis=1) > release_thr
+
+    held_slot, last_press_tick, last_slot = None, -10**9, 1
+    keys_per_tick = []
+    for t in range(grid_length):
+        if press_now[t] and (t - last_press_tick) >= cooldown:
+            slot = 1 - last_slot
+            held_slot = slot
+            last_press_tick, last_slot = t, slot
+        elif held_slot is not None and release_now[t] and (t - last_press_tick) >= 2:
+            held_slot = None
+        k = Key(0)
+        if held_slot == 0: k |= Key.K1
+        if held_slot == 1: k |= Key.K2
+        keys_per_tick.append(k)
+    return keys_per_tick
 
 def result_to_replay(result, beatmap_hash, username="osunator-bot"):
     grid = result['grid']
@@ -89,24 +108,7 @@ def result_to_replay(result, beatmap_hash, username="osunator-bot"):
     onset_prob = result['pred_key_onset']  # (n, 2) raw probabilities
     offset_prob = result['pred_key_offset']
     n = len(grid)
-    press_now = onset_prob.max(axis=1) > ONSET_THR  # slot-agnostic: model says WHEN
-    release_now = offset_prob.max(axis=1) > RELEASE_THR
-
-    held_slot = None
-    last_press_tick = -10 ** 9
-    last_slot = 1
-    keys_per_tick = []
-    for t in range(n):
-        if press_now[t] and (t - last_press_tick) >= COOLDOWN_TICKS:
-            slot = 1 - last_slot  # full alternation (your style)
-            held_slot = slot
-            last_press_tick, last_slot = t, slot
-        elif held_slot is not None and release_now[t] and (t - last_press_tick) >= 2:
-            held_slot = None  # >=2: never release same/next tick
-        k = Key(0)
-        if held_slot == 0: k = k | Key.K1
-        if held_slot == 1: k = k | Key.K2
-        keys_per_tick.append(k)
+    keys_per_tick = full_alternate(n, onset_prob, offset_prob)
 
     # absolute ms -> per-frame deltas. ROUND THE ABSOLUTE TIMES FIRST, then
     # diff — rounding each delta independently leaks +0.33ms/frame on a

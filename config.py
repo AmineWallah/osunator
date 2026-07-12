@@ -2,7 +2,7 @@ import csv
 import json
 from pathlib import Path
 
-ROOT = Path('/home/amine/PycharmProjects/osunator')
+ROOT = Path(__file__).resolve().parent
 REPLAYS = ROOT / 'replays'
 PLAYERS_DIR = REPLAYS / 'players'
 SUITABLE_DIR = REPLAYS / 'suitable'
@@ -12,11 +12,12 @@ OSU_DIR = ROOT / 'maps' / 'downloaded'
 FEATURES_DIR = ROOT / 'features'  
 STATS_PATH = FEATURES_DIR / 'norm_stats.json'
 HASH_FREQ_PATH = FEATURES_DIR / 'hash_freq.csv'
+CACHE_PATH = ROOT / 'cache.json'
 
 
 def load_cache():
     try:
-        with open('cache.json') as f:
+        with open(CACHE_PATH) as f:
             return json.load(f)
     except FileNotFoundError:
         return {"maps": {}, "hash_index": {}}

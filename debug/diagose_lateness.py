@@ -21,7 +21,7 @@ from predict_replay import generate_replay
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-REPLAY_PATH = '/replays/suitable/222mm - MAKOOTO - Tanukichi no Bouken [usagi] (2026-02-09) Osu.osr'
+REPLAY_PATH = '/home/amine/PycharmProjects/osunator/replays/suitable/222mm - MAKOOTO - Tanukichi no Bouken [usagi] (2026-02-09) Osu.osr'
 MODEL_PATH = '../best_model.keras'
 TEMPERATURE = 0.0
 
@@ -37,7 +37,7 @@ TICK_MS = 1000.0 / 60.0
 # ---------------------------------------------------------------------------
 stats = load_norm_stats()
 model = keras.models.load_model(MODEL_PATH, compile=False)
-beatmap, beatmap_id, replay, path = beatmap_replay_pairs([REPLAY_PATH])[0]
+beatmap, beatmap_id, replay, path = next(beatmap_replay_pairs([REPLAY_PATH]))
 print(f"map/replay: {path}")
 print(f"temperature: {TEMPERATURE}   window: "
       f"{'whole map' if WINDOW_TICKS is None else f'first {WINDOW_TICKS} ticks (~{WINDOW_TICKS/60:.0f}s)'}\n")

@@ -16,22 +16,24 @@ innocent and the bug lives in result_to_replay.
 """
 
 import numpy as np
+import csv
 from tensorflow import keras
 from osrparse import Replay
-
-from config import load_norm_stats
+from config import load_norm_stats, FEATURES_DIR
 from parsing import beatmap_replay_pairs, convert_to_absolute
 from predict_replay import generate_replay, result_to_replay
 
 # ---------------------------------------------------------------------------
-REPLAY_PATH = '/replays/suitable/222mm - MAKOOTO - Tanukichi no Bouken [usagi] (2026-02-09) Osu.osr'
-MODEL_PATH = '../best_model.keras'
+rows = list(csv.DictReader(open(FEATURES_DIR / 'manifest.csv')))
+row = next(r for r in rows if r['split'] == 'train')   # or pick a specific map by name
+REPLAY_PATH = row['replay_path']
+MODEL_PATH = '/home/amine/PycharmProjects/osunator/best_model.keras'
 OSR_OUT = 'roundtrip_test.osr'
 # ---------------------------------------------------------------------------
 
 stats = load_norm_stats()
 model = keras.models.load_model(MODEL_PATH, compile=False)
-beatmap, beatmap_id, human_replay, path = beatmap_replay_pairs([REPLAY_PATH])[0]
+beatmap, beatmap_id, human_replay, path = next(beatmap_replay_pairs([REPLAY_PATH]))
 print(f"map/replay: {path}\n")
 
 # --- generate + write, exactly like predict_replay.__main__ ---

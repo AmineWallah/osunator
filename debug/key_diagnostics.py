@@ -6,8 +6,8 @@ from parsing import beatmap_replay_pairs, build_training_example
 from predict_replay import generate_replay
 
 REPLAY_PATH = '/home/amine/PycharmProjects/osunator/replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
-MODEL_PATH = 'best_model.keras'
-THRESHOLD = 0.5
+MODEL_PATH = '../best_model.keras'
+THRESHOLD = 0.4
 
 stats = load_norm_stats()
 model = keras.models.load_model(MODEL_PATH, compile=False)

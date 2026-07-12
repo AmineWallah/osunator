@@ -17,7 +17,7 @@ osu_files/
 kaggle_dataset/
 maps/
 replays/
-
+gen_cache/
 # env
 .venv/
 __pycache__/

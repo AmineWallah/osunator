@@ -29,7 +29,7 @@ from config import load_norm_stats
 from parsing import beatmap_replay_pairs, build_training_example
 from predict_replay import generate_replay
 
-REPLAY_PATH = '/replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
+REPLAY_PATH = '../replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
 MODEL_PATH = '../best_model.keras'
 OUT_PNG = 'zigzag_check.png'
 
@@ -55,7 +55,7 @@ def heading_changes(xs, ys):
 def main():
     stats = load_norm_stats()
     model = keras.models.load_model(MODEL_PATH, compile=False)
-    beatmap, beatmap_id, replay, path = beatmap_replay_pairs([REPLAY_PATH])[0]
+    beatmap, beatmap_id, replay, path = next(beatmap_replay_pairs([REPLAY_PATH]))
     print(f"map/replay: {path}")
 
     example = build_training_example(beatmap, replay)   # human path on the same grid

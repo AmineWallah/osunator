@@ -268,33 +268,25 @@ async def download_osu(session, beatmap_id, record):
 
 
 async def main():
-    """Full pipeline, in order:
-    1. filter_replays()  - sync, local: players/ -> suitable/ (accuracy + mods)
-    2. resolve phase     - async: every suitable/ replay's hash -> beatmap_id (cached)
-    3. download phase    - async: fetch the .osu for every resolved-but-not-downloaded map
-    4. save_cache()      - persist resolution/download state
-    5. prune_suitable()  - post-resolve cleanup: move dead replays out of suitable/
-       (dry_run=False here — flip to True to inspect stats without moving files)
-    """
-    # filter_replays()
     cache = load_cache()
     hash_freq = load_hash_freq()
-    # phase 1: resolve every replay's hash -> beatmap_id
-    # paths = list(SUITABLE_DIR.rglob('*.osr'))
-    # await tqdm.gather(*[resolve_one(p, cache) for p in paths])
 
-    # Replacement for phase 1: use hashes directly
-    await tqdm.gather(*[resolve_one_hash_version(h, cache) for h in hash_freq.keys() if hash_freq[h] >= REPLAYS_PER_MAP])
+    # resolve from hashes (census regime) — the ONLY correct phase-1 now
+    await tqdm.gather(*[resolve_one_hash_version(h, cache)
+                        for h in hash_freq.keys() if hash_freq[h] >= REPLAYS_PER_MAP])
 
-    # phase 2: download the .osu for every resolved-but-not-downloaded map
+    # download: no-ops for files on disk IF we pre-mark them (fresh cache says downloaded=False)
+    for bid, rec in cache['maps'].items():
+        if (OSU_DIR / f"{bid}.osu").exists():
+            rec['downloaded'] = True  # file's already here from the original run
+
     targets = [(bid, rec) for bid, rec in cache['maps'].items()
                if rec.get('resolved') and not rec.get('downloaded')]
+    print(f"downloads needed: {len(targets)}")  # expect ~0-60 (the originally-failed ones)
     async with aiohttp.ClientSession(headers={"User-Agent": USER_AGENT}) as session:
         await tqdm.gather(*[download_osu(session, bid, rec) for bid, rec in targets])
 
-    save_cache(cache)
-
-    prune_suitable(cache, dry_run=False)  # to clean up broken replays, dry_run=True to look at stats without moving
+    save_cache(cache)  # THE POINT OF THE RUN
 
 
 if __name__ == "__main__":
