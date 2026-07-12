@@ -14,7 +14,7 @@ from slider.beatmap import Slider, Spinner
 CORRUPT_CAP = 500 # Tolerance gap for negative time-deltas, used to evaluate whether a replay is corrupt (went back in time) or not
 TICK_MS = 1000 / 60 # We are going for a 60 ticks per second approach, so we divide 1000ms (1 second) by the number of ticks (60)
 CHUNK_SECONDS = 10
-CHUNK_TICKS = int(CHUNK_SECONDS * 1000 / TICK_MS) # for claude: should we move this variable somewhere else? it's not used in parsing.py
+CHUNK_TICKS = int(CHUNK_SECONDS * 1000 / TICK_MS)
 LEAD_IN_POS = (256.0, -500.0) # osu replays usually carry this frame as a placeholder of some sort, we store it in a constant for future checks
 GRID_TAIL_TICKS = 12 # Added to a grid so that it doesn't cut off 16ms earlier than the last hit object
 
