@@ -18,6 +18,7 @@ TICK_MS = 1000 / 60 # We are going for a 60 ticks per second approach, so we div
 CHUNK_SECONDS = 10
 CHUNK_TICKS = int(CHUNK_SECONDS * 1000 / TICK_MS) # for claude: should we move this variable somewhere else? it's not used in parsing.py
 LEAD_IN_POS = (256.0, -500.0) # osu replays usually carry this frame as a placeholder of some sort, we store it in a constant for future checks
+GRID_TAIL_TICKS = 12 # Added to a grid so that it doesn't cut off 16ms earlier than the last hit object
 
 
 def to_ms(td: datetime.timedelta) -> float:
@@ -162,16 +163,20 @@ def beat_length_at(beatmap: slider.beatmap.Beatmap, time_td: timedelta) -> float
     return tp.parent.ms_per_beat if tp.parent is not None else tp.ms_per_beat
 
 
-def build_grid(beatmap):
+def build_grid(beatmap: slider.beatmap.Beatmap) -> np.ndarray:
+    """
+    Builds a grid of timestamps (in milliseconds) that will be used to sample the replay data.
+    :param beatmap: osu! beatmap object
+    :return: Replay grid
+    """
     first_obj = beatmap._hit_objects[0]
     last_obj = beatmap._hit_objects[-1]
 
     lead_in = beat_length_at(beatmap, first_obj.time)
-    grid_start = max(0, to_ms(first_obj.time) - lead_in)
-    grid_end = to_ms(getattr(last_obj, 'end_time', last_obj.time))
+    grid_start = max(0, to_ms(first_obj.time) - lead_in) # First object - lead in so that the grid starts at the first hit-object without including the typical empty space at the start of a map
+    grid_end = to_ms(getattr(last_obj, 'end_time', last_obj.time)) # last_obj time so that the grid doesn't crop a slider/spinner object
 
-    GRID_TAIL_TICKS = 12
-    return np.arange(grid_start, grid_end + GRID_TAIL_TICKS * TICK_MS, TICK_MS)
+    return np.arange(grid_start, grid_end + GRID_TAIL_TICKS * TICK_MS, TICK_MS) # GRID_TAIL_TICKS keeps the grid from ending 16ms earlier than the last hit-object
 
 
 def resample_cursor(replay, grid):
