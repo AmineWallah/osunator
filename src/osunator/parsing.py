@@ -230,13 +230,21 @@ def resample_keys(replay: osrparse.Replay, grid: np.ndarray) -> tuple[np.ndarray
     return held, onset, offset
 
 
-def resample_map_features(beatmap, grid):
+def resample_map_features(beatmap: slider.beatmap.Beatmap, grid: np.ndarray) -> dict[str, np.ndarray]:
+    """
+    For a given map, resample it's features to match a 60 ticks per second grid
+    :param beatmap: beatmap to be resampled
+    :param grid: grid of the corresponding beatmap
+    :return: dictionary of map features, each feature is a numpy array of length n_ticks
+    """
     objects = beatmap._hit_objects
     n_ticks = len(grid)
 
+    # Converts map object times from time-deltas to milliseconds
     starts = np.array([to_ms(o.time) for o in objects])
     ends = np.array([to_ms(getattr(o, 'end_time', o.time)) for o in objects])
 
+    # Initialize resampled events to zeroes
     target_x = np.zeros(n_ticks)
     target_y = np.zeros(n_ticks)
     is_active = np.zeros(n_ticks, dtype=bool)
@@ -244,33 +252,35 @@ def resample_map_features(beatmap, grid):
     is_spinner = np.zeros(n_ticks, dtype=bool)
     time_to_next = np.zeros(n_ticks)
 
-    next_obj_idx = np.searchsorted(starts, grid, side='left')
+    next_obj_idx = np.searchsorted(starts, grid, side='left') # per tick: index of the first object starting at-or-after it
 
     for i, obj in enumerate(objects):
-        active_mask = (grid >= starts[i]) & (grid <= ends[i])
+        active_mask = (grid >= starts[i]) & (grid <= ends[i]) # ticks inside THIS object's own time span
 
-        if active_mask.any():
+        if active_mask.any(): # If at least one grid tick is within the object's time span
             is_active[active_mask] = True
 
-            if isinstance(obj, Spinner):
+            if isinstance(obj, Spinner): # Mark spinner as active for it's duration
                 is_spinner[active_mask] = True
                 target_x[active_mask] = obj.position.x
                 target_y[active_mask] = obj.position.y
 
-            elif isinstance(obj, Slider):
+            elif isinstance(obj, Slider): # Mark slider as active for it's duration
                 is_slider[active_mask] = True
                 active_ticks = grid[active_mask]
+                # Calculate slider ball positions at the active ticks
                 ball_positions = [slider_position(obj, t)[1] for t in active_ticks]
                 target_x[active_mask] = [p.x for p in ball_positions]
                 target_y[active_mask] = [p.y for p in ball_positions]
 
             else:
+                # Log circle's positions
                 target_x[active_mask] = obj.position.x
                 target_y[active_mask] = obj.position.y
 
-    free_mask = ~is_active
+    free_mask = ~is_active # free flight (no active object): aim target is the next object's entry point
     if free_mask.any():
-        idx = np.clip(next_obj_idx[free_mask], 0, len(objects) - 1)
+        idx = np.clip(next_obj_idx[free_mask], 0, len(objects) - 1) # pin out-of-range tail indices (past-last-object ticks) to the last object
         next_objs = [objects[j] for j in idx]
         target_x[free_mask] = [o.position.x for o in next_objs]
         target_y[free_mask] = [o.position.y for o in next_objs]
@@ -279,14 +289,16 @@ def resample_map_features(beatmap, grid):
     clipped_next = np.clip(next_obj_idx, 0, len(objects) - 1)
     time_to_next = np.maximum(np.where(is_active, 0.0, starts[clipped_next] - grid), 0.0)
 
+    # Calculates for how long an object is visible before its hit time
     ar = beatmap.approach_rate
-    if ar < 5:
+    if ar < 5: # AR 5 is the baseline (code snippet straight from the osu! wiki)
         preempt = 1200 + 600 * (5 - ar) / 5
     else:
         preempt = 1200 - 750 * (ar - 5) / 5
 
-    approach_progress = np.clip(1.0 - time_to_next / preempt, 0.0, 1.0)
+    approach_progress = np.clip(1.0 - time_to_next / preempt, 0.0, 1.0) # Fraction of how close the approach circle is to the hit-object
 
+    # Dict of map features
     return {
         'target_x': target_x,
         'target_y': target_y,
@@ -298,7 +310,8 @@ def resample_map_features(beatmap, grid):
     }
 
 
-def build_training_example(beatmap, replay):
+def build_training_example(beatmap: slider.beatmap.Beatmap, replay: osrparse.Replay):
+    # Grid building
     grid = build_grid(beatmap)
 
     x_grid, y_grid = resample_cursor(replay, grid)
