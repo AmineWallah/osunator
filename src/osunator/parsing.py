@@ -199,24 +199,34 @@ def resample_cursor(replay: osrparse.Replay , grid: np.ndarray) -> tuple[np.ndar
     return x_grid, y_grid
 
 
-def resample_keys(replay, grid):
-    events = convert_to_absolute(replay)
+def resample_keys(replay: osrparse.Replay, grid: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+        Resamples key events from a replay to a 60 ticks per second grid, the grid has to be from the map that the replay refers to
+
+        :param replay: osu! replay object (frames carry a key bitmask:
+        M1=1, M2=2, K1=4, K2=8)
+        :param grid: grid of timestamps (in milliseconds)
+        :return: tuple of held, onset, and offset states at each grid tick
+    """
+    events = convert_to_absolute(replay) # Gets the absolute times of a replay event
+    # Times and key events respectively
     times = np.array([e[0] for e in events])
     keys = np.array([e[3] for e in events])
 
-    SLOT_A = 1 | 4
-    SLOT_B = 2 | 8
+    SLOT_A = 1 | 4 # Mouse/Keyboard key 1
+    SLOT_B = 2 | 8 # Mouse/Keyboard key 2
 
-    idx = np.clip(np.searchsorted(times, grid, side='right') - 1, 0, len(times) - 1)
+    idx = np.clip(np.searchsorted(times, grid, side='right') - 1, 0, len(times) - 1) # Re-assigns the index to a correct grid tick because an event can fall in between two
     sampled = keys[idx]
     held = np.stack([
         (sampled & SLOT_A) != 0,
         (sampled & SLOT_B) != 0,
-    ])
+    ]) # (2, n_ticks)
 
+    # edge detection: prev = held shifted one tick (nothing held before t0)
     prev = np.concatenate([np.zeros((2, 1), dtype=bool), held[:, :-1]], axis=1)
-    onset = held & ~prev
-    offset = ~held & prev
+    onset = held & ~prev # rising edge: press starts this tick
+    offset = ~held & prev # falling edge: release this tick
     return held, onset, offset
 
 
