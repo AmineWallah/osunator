@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 from pathlib import Path
 
 import osrparse
@@ -124,20 +125,39 @@ def beatmap_replay_pairs(paths: list[Path]) -> Iterator[tuple[slider.beatmap.Bea
         yield (beatmap, beatmap_id, replay, path) # Using yield for lazy-loading
 
 
-def cursor_at(times, xs, ys, t):
+def cursor_at(times: np.ndarray, xs: np.ndarray, ys: np.ndarray, t: float) -> tuple[float, float]:
+    """
+    Linearly interpolate the cursor's position at a single query time t from the recorded frames; clamps to the first/last frame outside the recorded range.
+
+    :param times: array of timestamps (in milliseconds), has to be increasing
+    :param xs: array of x-coordinates
+    :param ys: array of y-coordinates
+    :param t: precise timestamp that we want the coordinates for (in milliseconds)
+    :return: (x, y) coordinates of the cursor at t
+    """
     if t <= times[0]:
         return xs[0], ys[0]
     if t >= times[-1]:
         return xs[-1], ys[-1]
-    i = bisect.bisect_right(times, t)
-    t0, t1 = times[i-1], times[i]
+
+    i = bisect.bisect_right(times, t) # Returns the index of the first element that is strictly greater to t
+    t0, t1 = times[i-1], times[i] # Times at the left and right of the queried time
+
+    # Calculating the coordinates of the cursor at t
     frac = (t - t0) / (t1 - t0)
+
     x = xs[i-1] + frac * (xs[i] - xs[i-1])
     y = ys[i-1] + frac * (ys[i] - ys[i-1])
     return x, y
 
 
-def beat_length_at(beatmap, time_td):
+def beat_length_at(beatmap: slider.beatmap.Beatmap, time_td: timedelta) -> float:
+    """
+    True beat length (ms per beat) in effect at a given time. (check osu wiki for timing point convention)
+
+    :param time_td: query time as a timedelta
+    :return: ms per beat (e.g. 500.0 = 120 BPM), always positive
+    """
     tp = beatmap.timing_point_at(time_td)
     return tp.parent.ms_per_beat if tp.parent is not None else tp.ms_per_beat
 
