@@ -69,7 +69,7 @@ def convert_to_absolute(replay: osrparse.Replay) -> list[tuple[float, float, flo
 
     Note: output times are strictly increasing, if time == 0 -> song start
 
-    :param replay: .osr file in question
+    :param replay: osu! replay file
     :return: list of replay events in absolute time
     :raises ValueError: mid-replay backward time jump > CORRUPT_CAP
     """
@@ -310,22 +310,33 @@ def resample_map_features(beatmap: slider.beatmap.Beatmap, grid: np.ndarray) -> 
     }
 
 
-def build_training_example(beatmap: slider.beatmap.Beatmap, replay: osrparse.Replay):
+def build_training_example(beatmap: slider.beatmap.Beatmap, replay: osrparse.Replay) -> dict[str, np.ndarray]:
+    """
+    Builds training example for a given map and replay.
+    :param beatmap: osu! beatmap object
+    :param replay: osu! replay object of the map in question
+    :return: dictionary of training example features
+    """
     # Grid building
     grid = build_grid(beatmap)
-
     x_grid, y_grid = resample_cursor(replay, grid)
     held, onset, offset = resample_keys(replay, grid)
+
+    # Getting map features
     map_feats = resample_map_features(beatmap, grid)
 
+    # INPUTS: distances from the cursor to the hit-object
     target_dx = map_feats['target_x'] - x_grid
     target_dy = map_feats['target_y'] - y_grid
 
+    # LABELS: distance from a cursor position to the next one on the grid
     cursor_dx = np.diff(x_grid, prepend=x_grid[0])
     cursor_dy = np.diff(y_grid, prepend=y_grid[0])
 
+    # approach progress of a hit-circle to the hit-object (0 = not yet visible, 1 = hit moment)
     approach_progress = map_feats['approach_progress']
 
+    # returns training example
     return {
         'grid': grid,
         'cursor_x': x_grid, 'cursor_y': y_grid,
@@ -338,24 +349,3 @@ def build_training_example(beatmap: slider.beatmap.Beatmap, replay: osrparse.Rep
         'key_held': held, 'key_onset': onset, 'key_offset': offset,
         'approach_progress': approach_progress,
     }
-
-
-def main():
-    paths = list(SUITABLE_DIR.rglob('*.osr'))
-    beatmap, replay, path = beatmap_replay_pairs(paths)[0]
-
-    ex = build_training_example(beatmap, replay)
-
-    idx = np.where(ex['is_active'] & ~ex['is_slider'] & ~ex['is_spinner'])[0][0]
-
-    reconstructed_x = ex['cursor_x'][idx] + ex['target_dx'][idx]
-    reconstructed_y = ex['cursor_y'][idx] + ex['target_dy'][idx]
-
-    print(f"reconstructed: ({reconstructed_x:.2f}, {reconstructed_y:.2f})")
-
-    map_feats = resample_map_features(beatmap, ex['grid'])
-    print(f"target_x/y:    ({map_feats['target_x'][idx]:.2f}, {map_feats['target_y'][idx]:.2f})")
-
-
-if __name__ == "__main__":
-    main()
