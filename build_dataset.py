@@ -3,13 +3,12 @@ import hashlib
 from tqdm import tqdm
 import numpy as np
 from collections import Counter
-from config import SUITABLE_DIR, FEATURES_DIR, OSU_DIR
+from config import SUITABLE_DIR, FEATURES_DIR, OSU_DIR, MANIFEST_PATH
 from parsing import beatmap_replay_pairs, build_training_example
 from dataset_cleanup import get_map_accuracy
 from osrparse import Replay
 from pathlib import Path
 
-MANIFEST_PATH = FEATURES_DIR / 'manifest.csv'
 MANIFEST_FIELDS = [
     'example_id', 'beatmap_id', 'beatmap_hash', 'beatmap_path', 'beatmap_name',
     'replay_path','npz_path', 'accuracy', 'split',
