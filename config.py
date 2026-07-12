@@ -16,7 +16,8 @@ STATS_PATH = DATA_META / 'norm_stats.json'
 HASH_FREQ_PATH = DATA_META / 'hash_freq.csv'
 CACHE_PATH = DATA_META / 'cache.json'
 MANIFEST_PATH = DATA_META / 'manifest.csv'
-
+REPLAY_CENSUS_PATH = DATA_META / 'replay_census.csv'
+SELECTED_REPLAYS_PATH = DATA_META / 'selected_replays.csv'
 
 def load_cache():
     try:

@@ -3,7 +3,8 @@ import hashlib
 from tqdm import tqdm
 import numpy as np
 from collections import Counter
-from config import SUITABLE_DIR, FEATURES_DIR, OSU_DIR, MANIFEST_PATH
+from config import SUITABLE_DIR, FEATURES_DIR, OSU_DIR, MANIFEST_PATH, REPLAY_CENSUS_PATH, HASH_FREQ_PATH, \
+    SELECTED_REPLAYS_PATH
 from parsing import beatmap_replay_pairs, build_training_example
 from dataset_cleanup import get_map_accuracy
 from osrparse import Replay
@@ -13,11 +14,11 @@ MANIFEST_FIELDS = [
     'example_id', 'beatmap_id', 'beatmap_hash', 'beatmap_path', 'beatmap_name',
     'replay_path','npz_path', 'accuracy', 'split',
 ]
-REPLAY_CENSUS_PATH = FEATURES_DIR / 'replay_census.csv'
+
 REPLAY_CENSUS_FIELDS = [
     'replay_path', 'replay_id', 'accuracy', 'beatmap_hash', 'mods', 'mode'
 ]
-HASH_FREQ_PATH = FEATURES_DIR / 'hash_freq.csv'
+
 TEST_FRACTION = 0.15   # ~15% of MAPS (not replays) go to test
 
 
@@ -35,7 +36,7 @@ def build_dataset():
     FEATURES_DIR.mkdir(parents=True, exist_ok=True)
 
     # paths = list(SUITABLE_DIR.rglob('*.osr'))
-    sel = csv.DictReader(open(FEATURES_DIR / 'selected_replays.csv'))
+    sel = csv.DictReader(open(SELECTED_REPLAYS_PATH))
     paths = [Path(r['replay_path']) for r in sel]
 
     pairs = beatmap_replay_pairs(paths)   # (beatmap, beatmap_id, replay, path) 4-tuples

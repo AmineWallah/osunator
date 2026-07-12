@@ -33,7 +33,7 @@ import slider
 from osrparse import Replay
 from osrparse.utils import Key
 
-from config import ROOT, FEATURES_DIR, load_norm_stats
+from config import ROOT, FEATURES_DIR, load_norm_stats, MANIFEST_PATH
 from parsing import build_training_example, convert_to_absolute, to_ms, TICK_MS
 from slider.beatmap import Circle, Slider
 
@@ -54,7 +54,7 @@ def pick_from_manifest(name_substr=None, split=None, seed=0):
     case-insensitive name substring; picks the map deterministically (seeded)
     from the candidates, then the highest-accuracy replay of that map.
     Returns the manifest row (dict). Prints what it picked and why."""
-    with open(FEATURES_DIR / "manifest.csv") as f:
+    with open(MANIFEST_PATH) as f:
         rows = list(csv.DictReader(f))
     if split:
         rows = [r for r in rows if r["split"] == split]

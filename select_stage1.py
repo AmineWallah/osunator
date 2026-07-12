@@ -1,12 +1,12 @@
 import pandas as pd
 from pathlib import Path
-from config import FEATURES_DIR, OSU_DIR, load_cache
+from config import FEATURES_DIR, OSU_DIR, load_cache, SELECTED_REPLAYS_PATH, REPLAY_CENSUS_PATH, HASH_FREQ_PATH
 
 MIN_REPLAYS_PER_MAP = 10
 TOP_PER_MAP = 5
 
-census = pd.read_csv(FEATURES_DIR / 'replay_census.csv')
-freq = pd.read_csv(FEATURES_DIR / 'hash_freq.csv')
+census = REPLAY_CENSUS_PATH
+freq = HASH_FREQ_PATH
 cache = load_cache()
 
 # maps that made the cut AND resolved AND have their .osu on disk
@@ -29,7 +29,7 @@ if missing:
     print(f"WARNING: {missing} selected paths no longer exist — skipped")
 rows = rows[exists]
 
-out = FEATURES_DIR / 'selected_replays.csv'
+out = SELECTED_REPLAYS_PATH
 rows[['replay_path', 'beatmap_hash', 'accuracy']].to_csv(out, index=False)
 print(f"selected {len(rows)} replays over {rows.beatmap_hash.nunique()} maps -> {out}")
 print(rows.accuracy.describe())

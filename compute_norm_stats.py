@@ -1,15 +1,13 @@
 import csv
 import json
 import numpy as np
+from config import FEATURES_DIR, MANIFEST_PATH, STATS_PATH
 
-from config import FEATURES_DIR
 
-MANIFEST_PATH = FEATURES_DIR / 'manifest.csv'
-STATS_PATH = FEATURES_DIR / 'norm_stats.json'
 
 
 def summarize(name, arr):
-    print(f"{name}: n={len(arr)}  mean={arr.mean():.3f}  std={arr.std():.3f}  "
+    print(f"{name}: n={len(arr)}  mean={arr.mean():.3f}  std={arr.std():.3f}"
           f"min={arr.min():.3f}  max={arr.max():.3f}  "
           f"p50={np.percentile(arr, 50):.3f}  p99={np.percentile(arr, 99):.3f}")
 

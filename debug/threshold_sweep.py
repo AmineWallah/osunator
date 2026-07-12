@@ -17,7 +17,8 @@ from osrparse import Replay
 from osrparse.utils import Key
 import slider
 
-from config import ROOT, FEATURES_DIR, load_norm_stats
+from build_dataset import MANIFEST_FIELDS
+from config import ROOT, FEATURES_DIR, load_norm_stats, MANIFEST_PATH
 from parsing import build_training_example
 from predict_replay import full_alternate, generate_replay
 
@@ -36,7 +37,7 @@ K2 = int(Key.K2)
 
 
 def find_manifest_row():
-    with open(FEATURES_DIR / "manifest.csv") as f:
+    with open(MANIFEST_PATH) as f:
         rows = [r for r in csv.DictReader(f)
                 if MAP_NAME_SUBSTR in r["beatmap_name"].lower()]
     if not rows:

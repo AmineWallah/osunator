@@ -5,7 +5,7 @@
 *.png
 *.log
 *.txt
-cache.json
+data_meta/cache.json
 
 # data dirs (adjust names to your config.py reality)
 features/

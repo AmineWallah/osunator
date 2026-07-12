@@ -19,12 +19,12 @@ import numpy as np
 import csv
 from tensorflow import keras
 from osrparse import Replay
-from config import load_norm_stats, FEATURES_DIR
+from config import load_norm_stats, FEATURES_DIR, MANIFEST_PATH
 from parsing import beatmap_replay_pairs, convert_to_absolute
 from predict_replay import generate_replay, result_to_replay
 
 # ---------------------------------------------------------------------------
-rows = list(csv.DictReader(open(FEATURES_DIR / 'manifest.csv')))
+rows = list(csv.DictReader(open(MANIFEST_PATH)))
 row = next(r for r in rows if r['split'] == 'train')   # or pick a specific map by name
 REPLAY_PATH = row['replay_path']
 MODEL_PATH = '/home/amine/PycharmProjects/osunator/best_model.keras'

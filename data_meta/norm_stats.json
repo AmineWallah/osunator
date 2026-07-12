@@ -1,0 +1,25 @@
+{
+  "target_dx": {
+    "transform": "divide",
+    "scale": 512.0
+  },
+  "target_dy": {
+    "transform": "divide",
+    "scale": 384.0
+  },
+  "cursor_dx": {
+    "transform": "zscore",
+    "mean": 0.0051448951125485426,
+    "std": 13.398459694672297
+  },
+  "cursor_dy": {
+    "transform": "zscore",
+    "mean": 0.0014603722410053027,
+    "std": 12.774296342326807
+  },
+  "time_to_next": {
+    "transform": "log1p_zscore",
+    "mean": 2.8986602405349715,
+    "std": 2.3133995777107836
+  }
+}
