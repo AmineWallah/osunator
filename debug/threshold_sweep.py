@@ -17,9 +17,8 @@ from osrparse import Replay
 from osrparse.utils import Key
 import slider
 
-from build_dataset import MANIFEST_FIELDS
-from config import ROOT, FEATURES_DIR, load_norm_stats, MANIFEST_PATH
-from parsing import build_training_example
+from config import ROOT, load_norm_stats, MANIFEST_PATH
+from src.osunator.parsing import build_training_example
 from predict_replay import full_alternate, generate_replay
 
 # ---------------------------------------------------------------------------

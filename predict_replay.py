@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow import keras
 import slider
 from config import load_norm_stats
-from parsing import build_grid, resample_map_features, build_training_example
+from src.osunator.parsing import build_grid, resample_map_features, build_training_example
 from training_data import normalize_example, chunk_example, assemble_xy
 from mdn import CorrelatedSampler
 from osrparse import Replay

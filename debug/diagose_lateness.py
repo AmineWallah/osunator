@@ -15,7 +15,7 @@ import numpy as np
 from tensorflow import keras
 
 from config import load_norm_stats
-from parsing import beatmap_replay_pairs, build_training_example
+from src.osunator.parsing import beatmap_replay_pairs, build_training_example
 from predict_replay import generate_replay
 
 # ---------------------------------------------------------------------------

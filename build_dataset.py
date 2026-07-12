@@ -5,7 +5,7 @@ import numpy as np
 from collections import Counter
 from config import SUITABLE_DIR, FEATURES_DIR, OSU_DIR, MANIFEST_PATH, REPLAY_CENSUS_PATH, HASH_FREQ_PATH, \
     SELECTED_REPLAYS_PATH
-from parsing import beatmap_replay_pairs, build_training_example
+from src.osunator.parsing import beatmap_replay_pairs, build_training_example
 from dataset_cleanup import get_map_accuracy
 from osrparse import Replay
 from pathlib import Path

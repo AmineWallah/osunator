@@ -33,8 +33,8 @@ import slider
 from osrparse import Replay
 from osrparse.utils import Key
 
-from config import ROOT, FEATURES_DIR, load_norm_stats, MANIFEST_PATH
-from parsing import build_training_example, convert_to_absolute, to_ms, TICK_MS
+from config import ROOT, load_norm_stats, MANIFEST_PATH
+from src.osunator.parsing import build_training_example, convert_to_absolute, to_ms, TICK_MS
 from slider.beatmap import Circle, Slider
 
 MODEL_PATH = ROOT / "best_model.keras"

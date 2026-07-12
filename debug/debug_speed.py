@@ -20,7 +20,7 @@ import numpy as np
 from tensorflow import keras
 
 from config import load_norm_stats
-from parsing import beatmap_replay_pairs
+from src.osunator.parsing import beatmap_replay_pairs
 from predict_replay import predict_replay, generate_replay
 
 REPLAY_PATH = '/replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'

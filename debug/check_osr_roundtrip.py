@@ -19,8 +19,8 @@ import numpy as np
 import csv
 from tensorflow import keras
 from osrparse import Replay
-from config import load_norm_stats, FEATURES_DIR, MANIFEST_PATH
-from parsing import beatmap_replay_pairs, convert_to_absolute
+from config import load_norm_stats, MANIFEST_PATH
+from src.osunator.parsing import beatmap_replay_pairs, convert_to_absolute
 from predict_replay import generate_replay, result_to_replay
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import numpy as np
-from parsing import CHUNK_TICKS
+from src.osunator.parsing import CHUNK_TICKS
 
 
 def perturb_example(example, noise_std_px=10.0, offset_std_px=25.0, offset_decay=0.95,

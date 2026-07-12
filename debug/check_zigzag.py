@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 
 from config import load_norm_stats
-from parsing import beatmap_replay_pairs, build_training_example
+from src.osunator.parsing import beatmap_replay_pairs, build_training_example
 from predict_replay import generate_replay
 
 REPLAY_PATH = '../replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
