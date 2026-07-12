@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+DATA_META = ROOT / 'data_meta'
+
 REPLAYS = ROOT / 'replays'
 PLAYERS_DIR = REPLAYS / 'players'
 SUITABLE_DIR = REPLAYS / 'suitable'
@@ -10,9 +12,10 @@ CORRUPT_DIR = REPLAYS / 'corrupt'
 UNRESOLVED_DIR = REPLAYS / 'unresolved'
 OSU_DIR = ROOT / 'maps' / 'downloaded'
 FEATURES_DIR = ROOT / 'features'  
-STATS_PATH = FEATURES_DIR / 'norm_stats.json'
-HASH_FREQ_PATH = FEATURES_DIR / 'hash_freq.csv'
-CACHE_PATH = ROOT / 'cache.json'
+STATS_PATH = DATA_META / 'norm_stats.json'
+HASH_FREQ_PATH = DATA_META / 'hash_freq.csv'
+CACHE_PATH = DATA_META / 'cache.json'
+MANIFEST_PATH = DATA_META / 'manifest.csv'
 
 
 def load_cache():
@@ -24,7 +27,7 @@ def load_cache():
 
 
 def save_cache(cache):
-    with open('cache.json', 'w') as f:
+    with open('data_meta/cache.json', 'w') as f:
         json.dump(cache, f, indent=2)
 
 
