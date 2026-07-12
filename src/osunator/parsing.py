@@ -185,7 +185,7 @@ def resample_cursor(replay: osrparse.Replay , grid: np.ndarray) -> tuple[np.ndar
 
     :param replay: osu! replay object
     :param grid: grid of timestamps (in milliseconds)
-    :return:
+    :return: tuple of x and y coordinates of the cursor at each grid tick
     """
     events = convert_to_absolute(replay) # Gets the absolute times of a replay event
     # Time, x and y events respectively
