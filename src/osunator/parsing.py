@@ -1,17 +1,15 @@
 import datetime
-from datetime import timedelta
-from pathlib import Path
-
 import osrparse
 import slider
 import bisect
 import numpy as np
+from datetime import timedelta
+from pathlib import Path
 from slider import Position
-from tqdm import tqdm
 from osrparse import Replay
 from collections.abc import Iterator
-from config import load_cache, OSU_DIR, SUITABLE_DIR
-from slider.beatmap import Circle, Slider, Spinner
+from config import load_cache, OSU_DIR
+from slider.beatmap import Slider, Spinner
 
 CORRUPT_CAP = 500 # Tolerance gap for negative time-deltas, used to evaluate whether a replay is corrupt (went back in time) or not
 TICK_MS = 1000 / 60 # We are going for a 60 ticks per second approach, so we divide 1000ms (1 second) by the number of ticks (60)
