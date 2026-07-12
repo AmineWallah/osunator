@@ -1,10 +1,14 @@
 import datetime
+from pathlib import Path
+
+import osrparse
 import slider
 import bisect
 import numpy as np
 from slider import Position
 from tqdm import tqdm
 from osrparse import Replay
+from collections.abc import Iterator
 from config import load_cache, OSU_DIR, SUITABLE_DIR
 from slider.beatmap import Circle, Slider, Spinner
 
@@ -57,47 +61,67 @@ def slider_position(slider_obj: Slider, timestamp: float) -> tuple[float, Positi
     return timestamp, pos
 
 
-def convert_to_absolute(replay):
-    events = []
-    abs_time = 0
-    prev = None
+def convert_to_absolute(replay: osrparse.Replay) -> list[tuple[float, float, float, int]]:
+    """
+    Parses osu! replay events and returns a list of (timestamp, x, y, keys) tuples (with the timestamp in milliseconds instead of time deltas)
+
+    Note: output times are strictly increasing, if time == 0 -> song start
+
+    :param replay: .osr file in question
+    :return: list of replay events in absolute time
+    :raises ValueError: mid-replay backward time jump > CORRUPT_CAP
+    """
+    events = [] # Accumulates time events
+    abs_time = 0 # Accumulates time in milliseconds
+    prev = None # If none -> first frame, otherwise -> last frame's time
+
     for ev in replay.replay_data:
         abs_time += ev.time_delta
-        if abs_time < 0:
+
+        if abs_time < 0: # Skips accumulation of negative time deltas at the start (from pre-song lead in data, present in every replay)
             continue
-        if not (-200 <= ev.x <= 712 and -200 <= ev.y <= 584):
+        if not (-200 <= ev.x <= 712 and -200 <= ev.y <= 584): # Drops single frame garbage coordinates (102 replay audit, ±10-17k px spikes, > half of label variance). bounds = reachable screen + slack
             continue
-        if prev is None and (ev.x, ev.y) == LEAD_IN_POS:
+        if prev is None and (ev.x, ev.y) == LEAD_IN_POS: # Skips placeholder first frame
             continue
-        if prev is not None and abs_time < prev:
-            if prev - abs_time > CORRUPT_CAP:
+        if prev is not None and abs_time < prev: # Guard for replays that go backwards in time
+            if prev - abs_time > CORRUPT_CAP: # If the jitter is too strong then it's most likely corruption, raise an error
                 raise ValueError(
                     f"time went backwards {prev - abs_time}ms mid-replay "
                     f"(prev={prev}, now={abs_time}) — probably corrupt")
-            abs_time = prev + 1
+            abs_time = prev + 1 # Adds one incase the replay went back in time by a very small amount (yes it happens)
+
         prev = abs_time
         events.append((abs_time, ev.x, ev.y, ev.keys))
     return events
 
 
-def beatmap_replay_pairs(paths):
+def beatmap_replay_pairs(paths: list[Path]) -> Iterator[tuple[slider.beatmap.Beatmap, str, Replay, Path]]:
+    """
+    Pairs replay paths with their respective beatmap, beatmap_id and replay files. Paths whose hash is not in the cache are skipped.
+
+    Lazy loads beatmap and replay objects, so it's not necessary to load them all at once.
+    :param paths: list of paths, each path pointing to an .osr file
+    :return: generator of (beatmap, beatmap_id, replay, path) tuples
+    """
     cache = load_cache()
+
     parsed_maps = {}
     for path in paths:
-        replay = Replay.from_path(str(path))
+        replay = Replay.from_path(str(path)) # Grab replay object from replay path
         try:
-            beatmap_id = cache['hash_index'][replay.beatmap_hash]
-        except KeyError:
+            beatmap_id = cache['hash_index'][replay.beatmap_hash] # Grab beatmap_id of corresponding beatmap hash from replay
+        except KeyError: # Skip unresolved replays
             continue
         if beatmap_id not in parsed_maps:
             try:
-                parsed_maps[beatmap_id] = slider.beatmap.Beatmap.from_path(str(OSU_DIR / f"{beatmap_id}.osu"))
+                parsed_maps[beatmap_id] = slider.beatmap.Beatmap.from_path(str(OSU_DIR / f"{beatmap_id}.osu")) # Store beatmap object in dictionary
             except FileNotFoundError:
-                parsed_maps[beatmap_id] = None
+                parsed_maps[beatmap_id] = None # Set beatmap as None incase of missing file
         beatmap = parsed_maps[beatmap_id]
-        if beatmap is None:
+        if beatmap is None: # Skip unresolved beatmaps
             continue
-        yield (beatmap, beatmap_id, replay, path)
+        yield (beatmap, beatmap_id, replay, path) # Using yield for lazy-loading
 
 
 def cursor_at(times, xs, ys, t):
