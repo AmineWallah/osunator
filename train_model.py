@@ -1,12 +1,12 @@
 import csv
 import numpy as np
 from tqdm import tqdm
-from config import FEATURES_DIR, load_norm_stats
+from config import FEATURES_DIR, load_norm_stats, MANIFEST_PATH
 from training_data import (perturb_example, normalize_example, chunk_example,
                            assemble_xy, measure_key_positive_rate, build_key_weight)
 from build_model import build_model, compile_model
 
-MANIFEST_PATH = FEATURES_DIR / 'manifest.csv'
+
 EPOCHS = 25
 NOISE_STD_PX = 10.0
 EPOCH_REPLAYS = 400
