@@ -179,12 +179,21 @@ def build_grid(beatmap: slider.beatmap.Beatmap) -> np.ndarray:
     return np.arange(grid_start, grid_end + GRID_TAIL_TICKS * TICK_MS, TICK_MS) # GRID_TAIL_TICKS keeps the grid from ending 16ms earlier than the last hit-object
 
 
-def resample_cursor(replay, grid):
-    events = convert_to_absolute(replay)
+def resample_cursor(replay: osrparse.Replay , grid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Resamples cursor events from a replay to a 60 ticks per second grid, the grid has to be from the map that the replay refers to
+
+    :param replay: osu! replay object
+    :param grid: grid of timestamps (in milliseconds)
+    :return:
+    """
+    events = convert_to_absolute(replay) # Gets the absolute times of a replay event
+    # Time, x and y events respectively
     times = np.array([e[0] for e in events])
     xs = np.array([e[1] for e in events])
     ys = np.array([e[2] for e in events])
 
+    # Join the time, x and y events with their respective grids
     x_grid = np.interp(grid, times, xs)
     y_grid = np.interp(grid, times, ys)
     return x_grid, y_grid
