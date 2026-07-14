@@ -96,8 +96,8 @@ def full_alternate(grid_length, onset_prob, offset_prob,
         elif held_slot is not None and release_now[t] and (t - last_press_tick) >= 2:
             held_slot = None
         k = Key(0)
-        if held_slot == 0: k |= Key.K1
-        if held_slot == 1: k |= Key.K2
+        if held_slot == 0: k |= Key.K1 | Key.M1
+        if held_slot == 1: k |= Key.K2 | Key.M2
         keys_per_tick.append(k)
     return keys_per_tick
 
@@ -126,8 +126,8 @@ def result_to_replay(result, beatmap_hash, username="osunator-bot"):
 
     return Replay(
         mode=GameMode.STD,
-        game_version=20231234,          # arbitrary but plausible osu client version number
-        beatmap_hash=beatmap_hash,      # REAL hash — associates this replay with the correct map
+        game_version=20260412,          # arbitrary but plausible osu client version number
+        beatmap_hash=beatmap_hash,      # REAL hash, associates this replay with the correct map
         username=username,
         replay_hash="",                 # not validated locally; left empty
         count_300=0, count_100=0, count_50=0, count_geki=0, count_katu=0, count_miss=0,
@@ -137,7 +137,7 @@ def result_to_replay(result, beatmap_hash, username="osunator-bot"):
         timestamp=datetime.now(timezone.utc),
         replay_data=replay_data,
         replay_id=0,
-        rng_seed=None,                  # osrparse's packer omits
+        rng_seed=473358,                  # random value, used one from a random human replay
     )
 
 def predict_replay(model, beatmap, replay, stats, temperature=0.0):
