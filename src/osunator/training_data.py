@@ -1,46 +1,50 @@
+"""Raw example -> training tensors: perturb, normalize, chunk, assemble.
+
+Order is a contract: perturb needs RAW pixels, normalize needs the
+perturbed values, chunk goes last (never perturb padded chunks).
+Full perturbation rationale: docs/perturbation.md.
+"""
+
 import numpy as np
 from osunator.parsing import CHUNK_TICKS
 
 
-def perturb_example(example, noise_std_px=10.0, offset_std_px=25.0, offset_decay=0.95,
-                    rng=None):
+def perturb_example(example: dict[str, np.ndarray], noise_std_px=10.0,
+                    offset_std_px=25.0, offset_decay=0.95,
+                    rng=None) -> dict[str, np.ndarray]:
     """DART-style perturbation with a proportional-controller expert.
 
-    Two displacement sources on top of the true path:
-      1. per-tick gaussian noise (as always),
-      2. a SMOOTH schedule offset following an Ornstein-Uhlenbeck process:
-             o[t+1] = offset_decay * o[t] + w[t],   w ~ N(0, sigma_w)
-         with sigma_w chosen so the stationary std of o is offset_std_px.
-         The offset wanders continuously (no segments, no jumps) and always
-         reverts toward the true path at rate (1 - offset_decay) per tick.
+    Displaces the training path (smooth OU schedule offset, stationary std
+    offset_std_px, mean-reversion 1-offset_decay per tick + white noise
+    noise_std_px) and relabels every tick with the corrective action from
+    the displaced position. Why OU: earlier constant-lag and trapezoid
+    variants made teleport labels at segment boundaries — measured, reverted.
+    Details + label algebra: docs/perturbation.md.
 
-    The perturbed base path is x_true + o. Labels point one tick ahead ALONG
-    THE BASE PATH: label[t] = base[t+1] - pert[t]
-                            = true_delta + (decay-1)*o[t] + w[t] - noise[t].
-    The corrective policy taught is one coherent rule: every tick, close a
-    fixed fraction (1-decay) of your current schedule error, plus normal
-    motion. 50px behind at decay=0.95 -> +2.5px/tick of catch-up. The same
-    observation (behind-ness) always maps to the same answer (proportional
-    correction) — no phases, no hidden state, and because the offset is
-    continuous there are no teleport labels anywhere, boundaries included.
+    :param example: RAW example from build_training_example() — pixel units,
+        unchunked, unnormalized.
+    :param rng: np.random.Generator; fresh unseeded if None.
+    :return: NEW dict. Rewritten: target_dx/dy (inputs from perturbed pos),
+        cursor_dx/dy (corrective labels), cursor_x/y (PERTURBED positions —
+        no longer ground truth). Other keys alias the input.
     """
     if rng is None:
         rng = np.random.default_rng()
-
     out = dict(example)
 
     x_true = example['cursor_x']
     y_true = example['cursor_y']
     n = len(x_true)
 
-    # --- smooth OU offset track ---
+    # -- smooth OU offset track --
     off_x = np.zeros(n)
     off_y = np.zeros(n)
     if offset_std_px > 0 and 0 <= offset_decay < 1:
+        # stationary-variance identity: var(o) = sigma_w^2 / (1 - decay^2)
         sigma_w = offset_std_px * np.sqrt(1.0 - offset_decay ** 2)
         wx = rng.normal(0.0, sigma_w, size=n)
         wy = rng.normal(0.0, sigma_w, size=n)
-        # start at stationary distribution so early ticks aren't special
+        # start at the stationary distribution so early ticks aren't special
         ox = rng.normal(0.0, offset_std_px)
         oy = rng.normal(0.0, offset_std_px)
         for t in range(n):
@@ -49,7 +53,7 @@ def perturb_example(example, noise_std_px=10.0, offset_std_px=25.0, offset_decay
             ox = offset_decay * ox + wx[t]
             oy = offset_decay * oy + wy[t]
 
-    # base = true path displaced by the smoothly wandering offset
+    # base = true path displaced by the wandering offset
     x_base = x_true + off_x
     y_base = y_true + off_y
 
@@ -57,12 +61,12 @@ def perturb_example(example, noise_std_px=10.0, offset_std_px=25.0, offset_decay
     x_pert = x_base + rng.normal(0.0, noise_std_px, size=n)
     y_pert = y_base + rng.normal(0.0, noise_std_px, size=n)
 
-    # inputs: shift target vectors so they now point FROM the perturbed position
+    # inputs: target vectors now point FROM the perturbed position
     out['target_dx'] = example['target_dx'] + (x_true - x_pert)
     out['target_dy'] = example['target_dy'] + (y_true - y_pert)
 
-    # labels: one tick ahead along the base path, from the perturbed position.
-    # = true motion + proportional offset correction + noise correction.
+    # labels: one tick ahead along the base path, from the perturbed position
+    # = true motion + proportional offset correction + noise correction
     label_dx = np.empty_like(x_true)
     label_dx[:-1] = x_base[1:] - x_pert[:-1]
     label_dx[-1] = x_true[-1] - x_pert[-1]  # last tick: pure correction to true
@@ -72,17 +76,15 @@ def perturb_example(example, noise_std_px=10.0, offset_std_px=25.0, offset_decay
     out['cursor_dx'] = label_dx
     out['cursor_dy'] = label_dy
 
-    # keep the perturbed positions visible for debugging/plotting
+    # keep perturbed positions visible for debugging/plotting
     out['cursor_x'] = x_pert
     out['cursor_y'] = y_pert
     out['offset_mag'] = np.hypot(off_x, off_y)  # debug
-
     return out
 
 
-
 def normalize_example(example, stats):
-    out = dict(example)   # shallow copy — only the transformed keys get replaced
+    out = dict(example)   # shallow copy — only transformed keys replaced
 
     out['target_dx'] = example['target_dx'] / stats['target_dx']['scale']
     out['target_dy'] = example['target_dy'] / stats['target_dy']['scale']
@@ -93,7 +95,7 @@ def normalize_example(example, stats):
     out['cursor_x_norm'] = example['cursor_x'] / 512.0
     out['cursor_y_norm'] = example['cursor_y'] / 384.0
 
-    log_ttn = np.log1p(example['time_to_next'])
+    log_ttn = np.log1p(example['time_to_next'])   # log1p: 0 ms -> 0, no -inf
     out['time_to_next'] = (log_ttn - stats['time_to_next']['mean']) / stats['time_to_next']['std']
 
     return out
@@ -127,7 +129,12 @@ def chunk_example(example, chunk_ticks=CHUNK_TICKS):
     return chunks
 
 
-INPUT_KEYS = ['target_dx', 'target_dy', 'time_to_next', 'is_active', 'is_slider', 'is_spinner', 'cursor_x_norm', 'cursor_y_norm', 'approach_progress']
+# ORDER IS THE CONTRACT: generate.py builds X by hand and must mirror this
+# list exactly — same features, same order, same normalization. Any edit
+# here requires the matching edit there; nothing checks agreement at runtime.
+INPUT_KEYS = ['target_dx', 'target_dy', 'time_to_next', 'is_active',
+              'is_slider', 'is_spinner', 'cursor_x_norm', 'cursor_y_norm',
+              'approach_progress']
 Y_CURSOR_COLUMNS = ['cursor_dx', 'cursor_dy']
 Y_KEY_COLUMNS = ['key_onset[A]', 'key_onset[B]', 'key_offset[A]', 'key_offset[B]']
 
@@ -141,8 +148,8 @@ def assemble_xy(chunk):
     ], axis=-1)
 
     y_keys = np.concatenate([
-        chunk['key_onset'].astype(np.float32).T,     # (2, n) -> (n, 2)
-        chunk['key_offset'].astype(np.float32).T,    # (2, n) -> (n, 2)
+        chunk['key_onset'].astype(np.float32).T,     # (2, T) -> (T, 2)
+        chunk['key_offset'].astype(np.float32).T,    # (2, T) -> (T, 2)
     ], axis=-1)
 
     mask = chunk['mask'].astype(np.float32)
@@ -151,25 +158,6 @@ def assemble_xy(chunk):
 
 
 def build_key_weight(chunk, pos_weight=30.0, tol_ticks=2, tol_weight=0.0):
-    """Per-tick sample_weight for the key head: weighted BCE + tolerance window.
-
-    Three tick classes (priority order — event beats tolerance beats background):
-      EVENT ticks      (any of the 4 onset/offset labels is 1): weight = pos_weight.
-                       Missing a real press is now pos_weight times worse than a
-                       background mistake — this is what breaks the all-zeros optimum.
-      TOLERANCE ticks  (within +-tol_ticks of an event, label 0): weight = tol_weight.
-                       A prediction 1-2 ticks off the human's exact tick is human-level
-                       timing jitter, not an error; tol_weight=0 means "not graded",
-                       so the model isn't punished twice (miss at t + false-pos at t+-1)
-                       for a press that's merely slightly early/late.
-      BACKGROUND ticks: weight = 1 (false presses in empty space stay fully punished).
-
-    Multiplied by the padding mask, so it REPLACES the mask in the key slot of
-    sample_weight (do NOT also multiply the mask in train_model).
-    Keras note: sample_weight is per-(batch, time) — one weight shared across the
-    4 output columns; per-column weighting isn't expressible this way. Good enough:
-    key events on different columns rarely coincide within a tolerance radius.
-    """
     onset = np.asarray(chunk['key_onset'], dtype=bool)  # (2, T)
     offset = np.asarray(chunk['key_offset'], dtype=bool)  # (2, T)
     event = onset.any(axis=0) | offset.any(axis=0)  # (T,)
@@ -193,8 +181,9 @@ def build_key_weight(chunk, pos_weight=30.0, tol_ticks=2, tol_weight=0.0):
 
 
 def measure_key_positive_rate(raw_examples):
-    """Fraction of ticks carrying any key event, over a list of raw examples.
-    Used by train() to derive pos_weight from data instead of a guess."""
+    """Fraction of ticks carrying any key event, over an iterable of raw
+    examples (generators fine — train.py streams one at a time).
+    Feeds train()'s data-derived pos_weight."""
     events = total = 0
     for ex in raw_examples:
         onset = np.asarray(ex['key_onset'], dtype=bool)
