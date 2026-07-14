@@ -1,10 +1,13 @@
 from osunator.config import HASH_FREQ_PATH, REPLAY_CENSUS_PATH, SUITABLE_DIR
-from build import REPLAY_CENSUS_FIELDS
 from osunator.data.cleanup import get_map_accuracy
 from tqdm import tqdm
 from osrparse import Replay
 from collections import Counter
 import csv
+
+REPLAY_CENSUS_FIELDS = [
+    'replay_path', 'replay_id', 'accuracy', 'beatmap_hash', 'mods', 'mode'
+]
 
 def build_replay_census():
     replay_paths = list(SUITABLE_DIR.rglob('*.osr'))

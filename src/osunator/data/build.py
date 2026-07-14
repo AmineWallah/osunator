@@ -13,10 +13,6 @@ MANIFEST_FIELDS = [
     'replay_path','npz_path', 'accuracy', 'split',
 ]
 
-REPLAY_CENSUS_FIELDS = [
-    'replay_path', 'replay_id', 'accuracy', 'beatmap_hash', 'mods', 'mode'
-]
-
 TEST_FRACTION = 0.15   # ~15% of MAPS (not replays) go to test
 
 
