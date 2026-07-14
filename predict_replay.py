@@ -7,7 +7,7 @@ import slider
 from config import load_norm_stats
 from src.osunator.parsing import build_grid, resample_map_features, build_training_example
 from training_data import normalize_example, chunk_example, assemble_xy
-from mdn import CorrelatedSampler
+from src.osunator.mdn import CorrelatedSampler
 from osrparse import Replay
 from osrparse.utils import ReplayEventOsu, Key, Mod, GameMode
 from datetime import datetime, timezone
