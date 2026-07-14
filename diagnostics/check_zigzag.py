@@ -25,9 +25,9 @@ matplotlib.use('Agg')   # no display needed; writes a PNG
 import matplotlib.pyplot as plt
 from tensorflow import keras
 
-from config import load_norm_stats
-from src.osunator.parsing import beatmap_replay_pairs, build_training_example
-from predict_replay import generate_replay
+from osunator.config import load_norm_stats
+from osunator.parsing import beatmap_replay_pairs, build_training_example
+from osunator.generate import generate_replay
 
 REPLAY_PATH = '../replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
 MODEL_PATH = '../best_model.keras'

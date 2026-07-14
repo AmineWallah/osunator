@@ -33,8 +33,8 @@ import slider
 from osrparse import Replay
 from osrparse.utils import Key
 
-from config import ROOT, load_norm_stats, MANIFEST_PATH
-from src.osunator.parsing import build_training_example, convert_to_absolute, to_ms, TICK_MS
+from osunator.config import ROOT, load_norm_stats, MANIFEST_PATH
+from osunator.parsing import build_training_example, convert_to_absolute, to_ms, TICK_MS
 from slider.beatmap import Circle, Slider
 
 MODEL_PATH = ROOT / "best_model.keras"
@@ -103,7 +103,7 @@ def load_or_generate(row, temperature):
         print(f"cache {cache.name} is for a DIFFERENT map version — regenerating\n")
 
     from tensorflow import keras
-    from predict_replay import generate_replay
+    from osunator.generate import generate_replay
     stats = load_norm_stats()
     model = keras.models.load_model(MODEL_PATH, compile=False)
     result = generate_replay(model, beatmap, stats, temperature=temperature)
@@ -116,7 +116,7 @@ def load_or_generate(row, temperature):
 # --------------------------------------------------------------- roundtrip --
 
 def run_roundtrip(result, map_hash):
-    from predict_replay import result_to_replay
+    from osunator.generate import result_to_replay
     grid = np.asarray(result["grid"], dtype=float)
     out = GEN_CACHE_DIR / "battery_roundtrip.osr"
     result_to_replay(result, map_hash).write_path(str(out))
@@ -176,7 +176,7 @@ def _recall(human_ticks, gen_ticks, tol=RECALL_TOL):
 
 
 def run_keys(result, example):
-    from predict_replay import full_alternate, ONSET_THR, RELEASE_THR, COOLDOWN_TICKS
+    from osunator.generate import full_alternate, ONSET_THR, RELEASE_THR, COOLDOWN_TICKS
     n = len(result["grid"])
     keys = full_alternate(n, result["pred_key_onset"], result["pred_key_offset"],
                           ONSET_THR, RELEASE_THR, COOLDOWN_TICKS)

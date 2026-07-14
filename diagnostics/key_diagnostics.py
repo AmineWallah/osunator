@@ -1,9 +1,9 @@
 """key_diagnostics.py — does the key head PRESS, and on time?"""
 import numpy as np
 from tensorflow import keras
-from config import load_norm_stats
-from src.osunator.parsing import beatmap_replay_pairs, build_training_example
-from predict_replay import generate_replay
+from osunator.config import load_norm_stats
+from osunator.parsing import beatmap_replay_pairs, build_training_example
+from osunator.generate import generate_replay
 
 REPLAY_PATH = '/home/amine/PycharmProjects/osunator/replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
 MODEL_PATH = '../best_model.keras'

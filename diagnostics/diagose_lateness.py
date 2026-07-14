@@ -14,9 +14,9 @@ Set REPLAY_PATH and run. No retraining; generation takes ~1-2s per map-minute.
 import numpy as np
 from tensorflow import keras
 
-from config import load_norm_stats
-from src.osunator.parsing import beatmap_replay_pairs, build_training_example
-from predict_replay import generate_replay
+from osunator.config import load_norm_stats
+from osunator.parsing import beatmap_replay_pairs, build_training_example
+from osunator.generate import generate_replay
 
 # ---------------------------------------------------------------------------
 # CONFIG

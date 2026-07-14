@@ -4,16 +4,16 @@ from tqdm import tqdm
 import tensorflow as tf
 from tensorflow import keras
 import slider
-from config import load_norm_stats
-from src.osunator.parsing import build_grid, resample_map_features, build_training_example
-from training_data import normalize_example, chunk_example, assemble_xy
-from src.osunator.mdn import CorrelatedSampler
+from osunator.config import load_norm_stats
+from osunator.parsing import build_grid, resample_map_features, build_training_example
+from osunator.training_data import normalize_example, chunk_example, assemble_xy
+from osunator.mdn import CorrelatedSampler
 from osrparse import Replay
 from osrparse.utils import ReplayEventOsu, Key, Mod, GameMode
 from datetime import datetime, timezone
 BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/889855 GALNERYUS - RAISE MY SWORD/GALNERYUS - RAISE MY SWORD (Sotarks) [A THOUSAND FLAMES].osu"   # set this to a real .osu file on your machine
-MODEL_PATH = 'best_model.keras'
-OUTPUT_REPLAY_PATH = 'generated.osr'
+MODEL_PATH = '../../best_model.keras'
+OUTPUT_REPLAY_PATH = '../../generated.osr'
 ONSET_THR = 0.35
 RELEASE_THR = 0.5
 COOLDOWN_TICKS = 3

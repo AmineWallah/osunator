@@ -1,10 +1,10 @@
 import csv
 import numpy as np
 from tqdm import tqdm
-from config import load_norm_stats, MANIFEST_PATH
-from training_data import (perturb_example, normalize_example, chunk_example,
-                           assemble_xy, measure_key_positive_rate, build_key_weight)
-from build_model import build_model, compile_model
+from osunator.config import load_norm_stats, MANIFEST_PATH
+from osunator.training_data import (perturb_example, normalize_example, chunk_example,
+                                        assemble_xy, measure_key_positive_rate, build_key_weight)
+from osunator.model import build_model, compile_model
 
 
 EPOCHS = 25

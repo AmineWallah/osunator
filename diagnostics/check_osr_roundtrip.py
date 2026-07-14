@@ -19,9 +19,9 @@ import numpy as np
 import csv
 from tensorflow import keras
 from osrparse import Replay
-from config import load_norm_stats, MANIFEST_PATH
-from src.osunator.parsing import beatmap_replay_pairs, convert_to_absolute
-from predict_replay import generate_replay, result_to_replay
+from osunator.config import load_norm_stats, MANIFEST_PATH
+from osunator.parsing import beatmap_replay_pairs, convert_to_absolute
+from osunator.generate import generate_replay, result_to_replay
 
 # ---------------------------------------------------------------------------
 rows = list(csv.DictReader(open(MANIFEST_PATH)))

@@ -17,9 +17,9 @@ from osrparse import Replay
 from osrparse.utils import Key
 import slider
 
-from config import ROOT, load_norm_stats, MANIFEST_PATH
-from src.osunator.parsing import build_training_example
-from predict_replay import full_alternate, generate_replay
+from osunator.config import ROOT, load_norm_stats, MANIFEST_PATH
+from osunator.parsing import build_training_example
+from osunator.generate import full_alternate, generate_replay
 
 # ---------------------------------------------------------------------------
 MAP_NAME_SUBSTR = "a thousand flames"          # matched case-insensitively in manifest beatmap_name

@@ -7,9 +7,9 @@ from tqdm.asyncio import tqdm
 import hashlib
 import aiohttp
 import shutil
-from src.osunator.parsing import convert_to_absolute
-from config import (PLAYERS_DIR, SUITABLE_DIR, CORRUPT_DIR, UNRESOLVED_DIR,
-                    OSU_DIR, load_cache, save_cache, load_hash_freq)
+from osunator.parsing import convert_to_absolute
+from osunator.config import (PLAYERS_DIR, SUITABLE_DIR, CORRUPT_DIR, UNRESOLVED_DIR,
+                                 OSU_DIR, load_cache, save_cache, load_hash_freq)
 
 load_dotenv()
 

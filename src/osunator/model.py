@@ -1,6 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras import layers
-from mdn import mdn_nll, MDN_PARAMS
+from osunator.mdn import mdn_nll, MDN_PARAMS
 
 N_INPUT_FEATURES = 9
 N_CURSOR_OUTPUTS = 2

@@ -1,7 +1,7 @@
 import csv
 import json
 import numpy as np
-from config import FEATURES_DIR, MANIFEST_PATH, STATS_PATH
+from osunator.config import FEATURES_DIR, MANIFEST_PATH, STATS_PATH
 
 
 

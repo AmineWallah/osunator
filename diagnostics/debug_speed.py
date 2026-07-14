@@ -19,9 +19,9 @@ Run on a TRAINING-set map so model quality isn't the confound.
 import numpy as np
 from tensorflow import keras
 
-from config import load_norm_stats
-from src.osunator.parsing import beatmap_replay_pairs
-from predict_replay import predict_replay, generate_replay
+from osunator.config import load_norm_stats
+from osunator.parsing import beatmap_replay_pairs
+from osunator.generate import predict_replay, generate_replay
 
 REPLAY_PATH = '/replays/suitable/INFERNOBESTMAP - GALNERYUS - RAISE MY SWORD [A THOUSAND FLAMES] (2023-10-08) Osu.osr'
 MODEL_PATH = '../best_model.keras'

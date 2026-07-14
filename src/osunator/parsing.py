@@ -8,7 +8,7 @@ from pathlib import Path
 from slider import Position
 from osrparse import Replay
 from collections.abc import Iterator
-from config import load_cache, OSU_DIR
+from osunator.config import load_cache, OSU_DIR
 from slider.beatmap import Slider, Spinner
 
 CORRUPT_CAP = 500 # Tolerance gap for negative time-deltas, used to evaluate whether a replay is corrupt (went back in time) or not

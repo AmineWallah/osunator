@@ -1,6 +1,5 @@
-import pandas as pd
 from pathlib import Path
-from config import FEATURES_DIR, OSU_DIR, load_cache, SELECTED_REPLAYS_PATH, REPLAY_CENSUS_PATH, HASH_FREQ_PATH
+from osunator.config import OSU_DIR, load_cache, SELECTED_REPLAYS_PATH, REPLAY_CENSUS_PATH, HASH_FREQ_PATH
 
 MIN_REPLAYS_PER_MAP = 10
 TOP_PER_MAP = 5
