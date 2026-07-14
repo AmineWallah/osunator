@@ -28,7 +28,7 @@ def load_cache():
 
 
 def save_cache(cache):
-    with open('data_meta/cache.json', 'w') as f:
+    with open(CACHE_PATH, 'w') as f:
         json.dump(cache, f, indent=2)
 
 
