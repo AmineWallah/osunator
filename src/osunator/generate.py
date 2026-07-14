@@ -11,7 +11,7 @@ from osunator.mdn import CorrelatedSampler
 from osrparse import Replay
 from osrparse.utils import ReplayEventOsu, Key, Mod, GameMode
 from datetime import datetime, timezone
-BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/889855 GALNERYUS - RAISE MY SWORD/GALNERYUS - RAISE MY SWORD (Sotarks) [A THOUSAND FLAMES].osu"   # set this to a real .osu file on your machine
+BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/219380 Konuko - Toumei Elegy/Konuko - Toumei Elegy (Awaken) [Ultimate Reverberant Gonkanau].osu"   # set this to a real .osu file on your machine
 MODEL_PATH = '../../best_model.keras'
 OUTPUT_REPLAY_PATH = '../../generated.osr'
 ONSET_THR = 0.35
