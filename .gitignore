@@ -19,6 +19,7 @@ maps/
 replays/
 gen_cache/
 # env
+*egg-info/
 .venv/
 __pycache__/
 /.env
