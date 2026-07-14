@@ -15,7 +15,7 @@ BEATMAP_PATH = "/home/amine/.local/share/osu-wine/osu!/Songs/889855 GALNERYUS - 
 MODEL_PATH = 'best_model.keras'
 OUTPUT_REPLAY_PATH = 'generated.osr'
 ONSET_THR = 0.35
-RELEASE_THR = 0.35
+RELEASE_THR = 0.5
 COOLDOWN_TICKS = 3
 
 
