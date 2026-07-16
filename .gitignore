@@ -24,4 +24,4 @@ gen_cache/
 __pycache__/
 /.env
 /docs/figures/
-test.py
+
