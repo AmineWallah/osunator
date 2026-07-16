@@ -178,7 +178,7 @@ def _recall(human_ticks, gen_ticks, tol=RECALL_TOL):
 def run_keys(result, example):
     from osunator.generate import full_alternate, ONSET_THR, RELEASE_THR, COOLDOWN_TICKS
     n = len(result["grid"])
-    keys = full_alternate(n, result["pred_key_onset"], result["pred_key_offset"],
+    keys = full_alternate(n, result["pred_key_onset"], result["pred_key_offset"], result["time_to_next_ms"],
                           ONSET_THR, RELEASE_THR, COOLDOWN_TICKS)
     g_ticks, g_dur = _onsets_durations(np.array([int(k) for k in keys]))
 
