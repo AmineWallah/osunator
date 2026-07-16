@@ -1,0 +1,29 @@
+# artifacts
+*.keras
+*.osr
+*.npz
+*.png
+*.log
+*.txt
+data_meta/cache.json
+
+# data dirs (adjust names to your config.py reality)
+features/
+players/
+suitable/
+corrupt/
+unresolved/
+osu_files/
+kaggle_dataset/
+maps/
+replays/
+gen_cache/
+# env
+*egg-info/
+.venv/
+__pycache__/
+/.env
+/docs/figures/
+
+!best_model.keras
+!requirements.txt
