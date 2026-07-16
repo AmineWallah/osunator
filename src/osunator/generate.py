@@ -17,7 +17,8 @@ OUTPUT_REPLAY_PATH = '../../generated.osr'
 ONSET_THR = 0.35
 RELEASE_THR = 0.5
 COOLDOWN_TICKS = 3
-
+INACTIVE_RELEASE_TICKS = 5
+SPARSE_GAP_MS = 400
 
 def reset_all_states(model):
     for layer in model.layers:
@@ -79,13 +80,13 @@ def generate_replay(model, beatmap, stats, start_x=256.0, start_y=192.0, tempera
         'pred_cursor_y': np.array(pred_cursor_y),
         'pred_key_onset': np.array(pred_key_onset),
         'pred_key_offset': np.array(pred_key_offset),
+        'time_to_next_ms': map_feats['time_to_next'],
     }
 
-def full_alternate(grid_length, onset_prob, offset_prob,
-                   onset_thr=ONSET_THR, release_thr=RELEASE_THR, cooldown=COOLDOWN_TICKS):
+def full_alternate(grid_length, onset_prob, offset_prob, time_to_next_ms,
+                   onset_thr=ONSET_THR, release_thr=RELEASE_THR, cooldown=COOLDOWN_TICKS, inactive_release_ticks=INACTIVE_RELEASE_TICKS):
     press_now = onset_prob.max(axis=1) > onset_thr
     release_now = offset_prob.max(axis=1) > release_thr
-
     held_slot, last_press_tick, last_slot = None, -10**9, 1
     keys_per_tick = []
     for t in range(grid_length):
@@ -93,8 +94,12 @@ def full_alternate(grid_length, onset_prob, offset_prob,
             slot = 1 - last_slot
             held_slot = slot
             last_press_tick, last_slot = t, slot
-        elif held_slot is not None and release_now[t] and (t - last_press_tick) >= 2:
+        elif held_slot is not None and (t - last_press_tick) >= 2 and \
+                (release_now[t] or
+                 ((t - last_press_tick) >= INACTIVE_RELEASE_TICKS
+                  and time_to_next_ms[t] > SPARSE_GAP_MS)):
             held_slot = None
+
         k = Key(0)
         if held_slot == 0: k |= Key.K1 | Key.M1
         if held_slot == 1: k |= Key.K2 | Key.M2
@@ -107,8 +112,9 @@ def result_to_replay(result, beatmap_hash, username="osunator-bot"):
     pred_y = result['pred_cursor_y']
     onset_prob = result['pred_key_onset']  # (n, 2) raw probabilities
     offset_prob = result['pred_key_offset']
+    time_to_next_ms = result['time_to_next_ms']
     n = len(grid)
-    keys_per_tick = full_alternate(n, onset_prob, offset_prob)
+    keys_per_tick = full_alternate(n, onset_prob, offset_prob, time_to_next_ms,)
 
     # absolute ms -> per-frame deltas. ROUND THE ABSOLUTE TIMES FIRST, then
     # diff — rounding each delta independently leaks +0.33ms/frame on a
