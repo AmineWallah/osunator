@@ -1,16 +1,16 @@
 """Compare a human .osr against a generated one, field by field.
 
-Purpose: isolate why the osu! client (a) doesn't display held keys on the
-key overlay for generated replays, and (b) shows a "replay corrupted"
-warning with D-rank/100%/zeroed stats.
+v2: adds hold-duration percentile comparison (p50/p90/p99/max) and a
+tail-vs-shift verdict, to discriminate:
+  TAIL-ONLY   p50/p90 at parity, p99/max explode -> thresholds are fine;
+              a few holds never release (suspect: quiet map stretches /
+              dead-zone neighborhood). Fix candidate: max-hold cap in
+              full_alternate, NOT a threshold change.
+  SHIFT       p50 already high -> live-head regime diverges from the sweep's
+              reconstructed-key regime; probe that, don't nudge thresholds.
 
-Hypotheses this instrument discriminates:
-  H1 (overlay): real client writes K1|M1 (=5) / K2|M2 (=10) for keyboard
-      presses; we write bare K1 (4) / K2 (8). -> visible in the key-value
-      census: human frames show 5/10, generated show 4/8.
-  H2 (warning): placeholder metadata (empty replay_hash, zeroed counts,
-      impossible game_version) trips a client sanity check. -> visible in
-      the metadata table.
+Also reports START positions of the longest generated holds, so they can be
+cross-referenced against map object density (dead-zone probe).
 
 Usage:
     python diagnostics/compare_replays.py <human.osr> <generated.osr>
@@ -19,6 +19,7 @@ Usage:
 import sys
 from collections import Counter
 
+import numpy as np
 from osrparse import Replay
 
 
@@ -30,6 +31,7 @@ META_FIELDS = [
 ]
 
 KEY_BITS = {1: 'M1', 2: 'M2', 4: 'K1', 8: 'K2', 16: 'SMOKE'}
+CLICK_MASK = 1 | 2 | 4 | 8   # any click-ish bit
 
 
 def decode_keys(v: int) -> str:
@@ -38,53 +40,56 @@ def decode_keys(v: int) -> str:
 
 
 def key_census(replay):
-    """Counter of raw key-field integer values across all frames."""
     return Counter(int(ev.keys) for ev in replay.replay_data)
 
 
-def hold_runs(replay):
-    """Lengths (in frames) of consecutive runs where any key bit is down.
-    If the generated replay has sane runs here, the holds EXIST in the data
-    and the overlay problem is representational (H1), not structural."""
-    runs, cur = [], 0
-    for ev in replay.replay_data:
-        if int(ev.keys) != 0:
-            cur += 1
-        elif cur:
-            runs.append(cur)
-            cur = 0
-    if cur:
-        runs.append(cur)
+def hold_runs_with_pos(replay, mask=CLICK_MASK):
+    """(length, start_frame_index, start_abs_ms) for every consecutive run
+    of frames with any bit in `mask` set. Trailer frames (dt=-12345) excluded.
+
+    CAVEAT (measured, this cycle): with mask=CLICK_MASK this measures
+    any-key-down runs, which CONFLATES gapless alternation with stuck holds
+    — full_alternate releases the old key on the same tick the new one
+    presses, so a whole dense section reads as one giant "run". Per-key
+    masks (K1: 4|1, K2: 8|2) measure actual per-key hold durations."""
+    runs = []
+    cur_len, cur_start_idx, cur_start_ms = 0, None, None
+    abs_ms = 0
+    for i, ev in enumerate(replay.replay_data):
+        if ev.time_delta == -12345:     # rng-seed trailer, not gameplay
+            continue
+        abs_ms += ev.time_delta
+        if int(ev.keys) & mask:
+            if cur_len == 0:
+                cur_start_idx, cur_start_ms = i, abs_ms
+            cur_len += 1
+        elif cur_len:
+            runs.append((cur_len, cur_start_idx, cur_start_ms))
+            cur_len = 0
+    if cur_len:
+        runs.append((cur_len, cur_start_idx, cur_start_ms))
     return runs
 
 
-def first_frames(replay, n=5):
-    return [(ev.time_delta, round(ev.x, 1), round(ev.y, 1), int(ev.keys))
-            for ev in replay.replay_data[:n]]
+def pct_table(label, lengths):
+    a = np.asarray(lengths)
+    if a.size == 0:
+        print(f"  {label:9s}: no holds")
+        return None
+    row = {p: np.percentile(a, p) for p in (50, 90, 99)}
+    print(f"  {label:9s}: n={a.size:5d}  p50={row[50]:5.1f}  p90={row[90]:5.1f}  "
+          f"p99={row[99]:6.1f}  max={a.max():5d}  (frames)")
+    return row, int(a.max())
 
 
-def report(label, replay):
+def report_meta_and_census(label, replay):
     print(f"\n=== {label} ===")
     print("-- metadata --")
     for f in META_FIELDS:
         print(f"  {f:14s} = {getattr(replay, f, '<absent>')!r}")
-
-    print("-- key-value census (raw int: frames) --")
+    print("-- key-value census --")
     for v, c in sorted(key_census(replay).items()):
-        print(f"  {v:3d} ({decode_keys(v):9s}): {c} frames")
-
-    runs = hold_runs(replay)
-    if runs:
-        import numpy as np
-        arr = np.array(runs)
-        print(f"-- hold runs: n={len(arr)} median={np.median(arr):.0f} "
-              f"min={arr.min()} max={arr.max()} frames --")
-    else:
-        print("-- hold runs: NONE (no frame has any key bit set) --")
-
-    print(f"-- first {5} frames (dt, x, y, keys) --")
-    for row in first_frames(replay):
-        print(f"  {row}")
+        print(f"  {v:3d} ({decode_keys(v):12s}): {c} frames")
 
 
 def main():
@@ -93,17 +98,48 @@ def main():
         sys.exit(1)
     human = Replay.from_path(sys.argv[1])
     gen = Replay.from_path(sys.argv[2])
-    report("HUMAN", human)
-    report("GENERATED", gen)
 
-    print("\n=== verdict hints ===")
-    hk, gk = set(key_census(human)), set(key_census(gen))
-    if (5 in hk or 10 in hk) and (4 in gk or 8 in gk) and not (5 in gk or 10 in gk):
-        print("H1 SUPPORTED: human uses K|M combos (5/10), generated uses bare K bits (4/8).")
-    else:
-        print("H1 not clearly supported by key census — read the tables.")
-    if not gen.replay_hash:
-        print("H2 candidate: generated replay_hash is empty.")
+    report_meta_and_census("HUMAN", human)
+    report_meta_and_census("GENERATED", gen)
+
+    K1_MASK, K2_MASK = 4 | 1, 8 | 2   # key + its mouse-alias bit
+
+    print("\n=== PER-KEY hold-duration distributions (the honest metric) ===")
+    per_key = {}
+    for label, rep in (("HUMAN", human), ("GENERATED", gen)):
+        k1 = hold_runs_with_pos(rep, K1_MASK)
+        k2 = hold_runs_with_pos(rep, K2_MASK)
+        both = [r[0] for r in k1 + k2]
+        per_key[label] = (pct_table(label, both), k1 + k2)
+
+    print("\n-- longest 10 generated PER-KEY holds (len_frames, start_frame, start_ms) --")
+    for run in sorted(per_key["GENERATED"][1], reverse=True)[:10]:
+        print(f"  {run}")
+
+    print("\n=== any-key-down runs (alternation continuity, NOT holds — see caveat) ===")
+    for label, rep in (("HUMAN", human), ("GENERATED", gen)):
+        pct_table(label, [r[0] for r in hold_runs_with_pos(rep)])
+
+    h, g = per_key["HUMAN"][0], per_key["GENERATED"][0]
+    if h and g:
+        (hp, hmax), (gp, gmax) = h, g
+        print("\n=== verdict (per-key) ===")
+        p50_ratio = gp[50] / max(hp[50], 1e-9)
+        tail_blown = gmax > 3 * hmax or gp[99] > 3 * hp[99]
+        if p50_ratio < 1.5 and tail_blown:
+            print("RELEASE STARVATION IN SPARSE PLAY: per-key body at parity but")
+            print("tail blown — releases are press-driven (swap on next note),")
+            print("exposed wherever notes are sparse. Cross-check offset_prob in")
+            print("gen_cache over the long-hold windows; fix candidate: scaffold")
+            print("release on N consecutive inactive ticks, thresholds untouched.")
+        elif p50_ratio >= 1.5:
+            print(f"SHIFT: generated per-key p50 is {p50_ratio:.1f}x human — the")
+            print("live head diverges from the sweep's reconstructed-key regime")
+            print("across the board. Probe the regime; don't nudge thresholds blind.")
+        else:
+            print("MIXED/UNCLEAR — read the tables.")
+
+
 
 
 if __name__ == "__main__":
