@@ -17,3 +17,6 @@ docker run --rm \
   aminewallah/osunator:latest \
   "/maps/your-map-name.osu" -o /out
 ```
+
+# Special thanks
+To the oomfies who contributed with their replay data in the early versions of the model, THANK YOU: 300mm, JaViLuMa, pluk, MrFish
