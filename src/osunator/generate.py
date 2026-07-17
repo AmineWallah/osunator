@@ -106,7 +106,7 @@ def full_alternate(grid_length, onset_prob, offset_prob, time_to_next_ms,
         keys_per_tick.append(k)
     return keys_per_tick
 
-def result_to_replay(result, beatmap_hash, username="osunator-bot"):
+def result_to_replay(result, beatmap_hash, username="osunator-bot", mod=Mod.NoFail):
     grid = result['grid']
     pred_x = result['pred_cursor_x']
     pred_y = result['pred_cursor_y']
