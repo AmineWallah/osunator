@@ -3,7 +3,7 @@ is a deep learning model that generates an osu! replay for a chosen map, based o
 
 this repo is the full pipeline of the model
 
-more detailed description to be added soon:tm: (gotta fix some comments first)
+more detailed description to be added soon:tm:
 
 # Docker
 
