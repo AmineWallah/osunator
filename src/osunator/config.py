@@ -2,7 +2,7 @@ import csv
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.environ.get('OSUNATOR_ROOT', Path(__file__).resolve().parents[2]))
 DATA_META = ROOT / 'data_meta'
 
 REPLAYS = ROOT / 'replays'
