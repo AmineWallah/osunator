@@ -122,6 +122,7 @@ def main():
     n = len(result["grid"])
     onset_prob = result["pred_key_onset"]
     offset_prob = result["pred_key_offset"]
+    time_to_next_ms = result["time_to_next_ms"]
 
     h_ticks, h_dur, h_gaps = human_reference(beatmap, human_replay)
     h_gaps3 = float((h_gaps <= 3).mean()) if len(h_gaps) else 0.0
