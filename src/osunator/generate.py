@@ -138,7 +138,7 @@ def result_to_replay(result, beatmap_hash, username="osunator-bot", mod=Mod.NoFa
         replay_hash="",                 # not validated locally; left empty
         count_300=0, count_100=0, count_50=0, count_geki=0, count_katu=0, count_miss=0,
         score=0, max_combo=0, perfect=False,   # placeholders — no hit-judgement simulation exists
-        mods=Mod.NoFail,
+        mods=mod,
         life_bar_graph=None,
         timestamp=datetime.now(timezone.utc),
         replay_data=replay_data,
