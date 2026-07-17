@@ -133,7 +133,7 @@ def main():
     tables = {}
     for o_thr in ONSET_THRS:
         for r_thr in RELEASE_THRS:
-            keys = full_alternate(n, onset_prob, offset_prob, o_thr, r_thr, COOLDOWN)
+            keys = full_alternate(n, onset_prob, offset_prob, time_to_next_ms, o_thr, r_thr, COOLDOWN)
             g_ticks, g_dur, g_gaps = onsets_durations_gaps(keys)
             rec = recall(h_ticks, g_ticks)
             gaps3 = float((g_gaps <= 3).mean()) if len(g_gaps) else 0.0
