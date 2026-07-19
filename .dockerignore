@@ -18,6 +18,7 @@ kaggle_dataset/
 maps/
 replays/
 gen_cache/
+assets/
 # env
 *egg-info/
 .venv/
