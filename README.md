@@ -92,6 +92,8 @@ be, I'll try to fix that in the future.
 
 Requirements: Python 3.12 and [uv](https://docs.astral.sh/uv/).
 
+**These steps were ran on Linux. if running on Windows, you might need to use WSL2**
+
 ```bash
 git clone https://github.com/AmineWallah/osunator
 cd osunator
