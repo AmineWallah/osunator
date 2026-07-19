@@ -13,6 +13,27 @@ score A-Ranks on the 7 to 8 star rating range, and to even perfect lower rated m
 
 Note: the replay file's stored score metadata is an intentional placeholder (D rank, zeroed counters)
 
+## Demo
+Comparison of a generated replay VS a replay of me playing the game on a same map: (renders made with 
+[danser-go](https://github.com/Wieku/danser-go))
+
+<p align="center">
+  AI Generated replay
+</p>
+
+<p align="center">
+  <img src="assets/Osunator%20replay.gif" alt="AI Generated replay">
+</p>
+
+<p align="center">
+  Human replay
+</p>
+
+<p align="center">
+  <img src="assets/Amine%20replay.gif" alt="AI Generated replay">
+</p>
+
+
 ## Evaluation
 
 These metrics have been calculated from 10 different maps on the test set. ~29 minutes of generated play, 8,432 hit targets.
