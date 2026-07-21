@@ -18,7 +18,7 @@ Comparison of a generated replay VS a replay of me playing the game on a same ma
 [danser-go](https://github.com/Wieku/danser-go))
 
 <p align="center">
-  AI Generated replay
+  AI Generated Replay
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@ Comparison of a generated replay VS a replay of me playing the game on a same ma
 </p>
 
 <p align="center">
-  Human replay
+  Human Replay
 </p>
 
 <p align="center">
