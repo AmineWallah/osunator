@@ -18,6 +18,7 @@ PAIRS_PATH = Path(os.environ.get("AB_PAIRS", "pairs.json"))
 TOKENS_PATH = Path(os.environ.get("AB_TOKENS", "tokens.json"))
 IP_SALT = os.environ.get("AB_IP_SALT", "dev-salt")
 ALLOW_OPEN = os.environ.get("AB_ALLOW_OPEN", "0") == "1"
+SESSION_CAP_PER_IP = int(os.environ.get("AB_SESSION_CAP", "10"))
 
 EXPERIENCE_BRACKETS = {"none", "casual", "1-4digit", "5-6digit", "lapsed"}
 # none: never played | casual: plays, unranked/low | 1-4digit / 5-6digit:
@@ -159,8 +160,20 @@ def create_session(body: SessionIn, request: Request):
         raise HTTPException(403, "invite token required")
 
     rater_id = str(uuid.uuid4())
+    caller_hash = ip_hash(request)
 
     with db() as conn:
+        # session cap: junk-session hygiene for open mode, not security.
+        # counts sessions per hashed IP in the last 24h; legit CGNAT users
+        # may share a hash, so the cap is generous.
+        if not body.token:  # tokens are single-use: their own cap
+            n_recent = conn.execute(
+            "SELECT COUNT(*) FROM raters WHERE ip_hash = ?"
+            " AND started_at > datetime('now', '-1 day')",
+                (caller_hash,),
+            ).fetchone()[0]
+            if n_recent >= SESSION_CAP_PER_IP:
+                raise HTTPException(429, "too many sessions from this network today")
         if body.token:
             used = conn.execute(
                 "SELECT rater_id FROM used_tokens WHERE token = ?", (body.token,)
@@ -175,7 +188,7 @@ def create_session(body: SessionIn, request: Request):
             "INSERT INTO raters (id, token, cohort, experience, started_at,"
             " user_agent, ip_hash) VALUES (?,?,?,?,?,?,?)",
             (rater_id, body.token, cohort, body.experience, utcnow(),
-             request.headers.get("user-agent", "")[:200], ip_hash(request)),
+             request.headers.get("user-agent", "")[:200], caller_hash),
         )
 
     # per-rater order shuffle + per-pair left/right shuffle, no labels

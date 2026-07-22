@@ -62,10 +62,13 @@ check("submit blocked when incomplete", r.status_code == 409, r.text)
 r = client.post("/api/submit", json={"rater_id": rid})
 check("submit 200", r.status_code == 200, r.text)
 result = r.json()
-# expected: chose B on pair01 (human=A -> wrong), A on pair02 (human=B -> wrong),
-#           A on pair03 (human=B -> wrong)  => 0/3
-check("score computed server-side, matches key", result["score"] == 0 and result["total"] == 3,
-      str(result))
+# final choices: 'B' on pair01 (revised), 'A' elsewhere — score derived from the loaded key
+final_choice = {pid: ("B" if pid == "pair01" else "A") for pid in PAIRS}
+expected = sum(
+    (final_choice[pid] == "A") == p["a_is_human"] for pid, p in PAIRS.items()
+)
+check("score computed server-side, matches key",
+      result["score"] == expected and result["total"] == len(PAIRS), str(result))
 check("reveal only after submit", all("human_slot" in x for x in result["reveal"]))
 r = client.post("/api/response", json={"rater_id": rid, "pair_id": "pair01", "chosen_slot": "A"})
 check("responses locked after submit", r.status_code == 409)
