@@ -10,7 +10,7 @@
     display:flex; justify-content:center; min-height:100vh;
   }
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  main{width:min(1040px,100%); padding:24px 20px 64px}
+  main{width:min(1280px,100%); padding:24px 20px 64px}
   a{color:var(--accent)}
   h1{font-size:1.5rem; margin:0 0 4px}
   h2{font-size:1.15rem; margin:0 0 12px}
@@ -39,7 +39,7 @@
   #strip .cell.nav{cursor:pointer; height:14px}
 
   /* pair stage */
-  #stage{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  #stage{display:grid; grid-template-columns:1fr 1fr; gap:24px}
   .clip{display:flex; flex-direction:column; gap:10px}
   .clip video{
     width:100%; aspect-ratio:16/9; background:#000;
