@@ -18,10 +18,12 @@ kaggle_dataset/
 maps/
 replays/
 gen_cache/
+turing/
 # env
 *egg-info/
 .venv/
 __pycache__/
 /.env
 /docs/figures/
-
+.idea/
+!eval/ab_study/requirements.txt

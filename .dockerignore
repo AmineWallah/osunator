@@ -19,6 +19,7 @@ maps/
 replays/
 gen_cache/
 assets/
+turing/
 # env
 *egg-info/
 .venv/

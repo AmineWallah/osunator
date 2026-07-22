@@ -1,0 +1,17 @@
+# study secrets
+pairs.json
+tokens.json
+
+# data
+*.db
+backups/
+
+# large files
+static/clips/
+
+# local scratch
+test.py
+.salt
+
+
+!requirements.txt
