@@ -56,22 +56,34 @@ reference at small movement scales (median 2–5 px), usually micro-jitters, not
 
 ### Human evaluation
 
-Blinded two-alternative forced-choice study: raters watched pairs of ~30 s clips
-(one human, one generated, same map and section) and picked the human.
-N = 43 raters × 10 pairs = 430 judgments.
+Blinded two-alternative forced-choice study: raters watched a pair of ~30 s clips: one human, one generated,
+same map and same section, and picked the one they
+believed was human. 10 pairs per rater.
 
-| Group | Accuracy                  | n raters |
-|---|---------------------------|---|
-| **Pooled** | **64.7%** (95% CI 60-69%) | 43 |
-| Ranked, 1–4 digit | 69.5%                     | 19 |
-| Ranked, 5–6 digit | 64.1%                     | 17 |
-| Lapsed / casual / none | ~50% (at chance)          | 7 |
+**Interim results (collection ongoing): 164 raters, 1,640 judgments.**
 
-Generated replays pass for human among non-expert observers, but ranked players
-detect them above chance. Expert scores look bimodal rather than uniformly
-shifted, several perfect 10/10 alongside near-chance results; suggesting
+| Group | n raters | Accuracy | 95% CI (rater-clustered) |
+|---|---|---|---|
+| **Pooled** | **164** | **65.0%** | **[62.0, 68.0]** |
+| Ranked, 1–4 digit | 65 | 69.1% | [64.1, 74.1] |
+| Ranked, 5–6 digit | 73 | 61.9% | [57.9, 66.0] |
+| Lapsed (played seriously, since quit) | 15 | 66.7% | [57.2, 76.2] |
+| Casual | 8 | 55.0% | [39.7, 70.3] |
+| Never played | 3 | 70.0% | — (underpowered) |
+
+Raters familiar with the game detect generated replays well above chance, and the
+effect appears to track *exposure* rather than current skill: lapsed players, who
+retain the perceptual knowledge but not the mechanics, perform in the same range
+as active ranked players. The casual and never-played brackets are currently too
+small to support a claim in either direction; recruitment targeting non-players
+is ongoing.
+
+Per-rater scores within the ranked brackets look bimodal rather than uniformly
+shifted, several perfect 10/10 alongside near-chance results suggesting
 detection relies on specific learnable artifacts rather than a diffuse
-impression. Harness, methodology and data: [`eval/ab_study/`](eval/ab_study/).
+impression.
+
+Harness, methodology, exclusions and data: [`eval/ab_study/`](eval/ab_study/).
 
 ## Docker Setup
 
