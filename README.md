@@ -54,6 +54,24 @@ reference at small movement scales (median 2–5 px), usually micro-jitters, not
 - spinner ticks are masked from the model for now, which is why it performs very poorly on them.
 - cannot generate replays in any map altering mods like Hard Rock, Double Time, Easy and Half Time.
 
+### Human evaluation
+
+Blinded two-alternative forced-choice study: raters watched pairs of ~30 s clips
+(one human, one generated, same map and section) and picked the human.
+N = 43 raters × 10 pairs = 430 judgments.
+
+| Group | Accuracy                  | n raters |
+|---|---------------------------|---|
+| **Pooled** | **64.7%** (95% CI 60-69%) | 43 |
+| Ranked, 1–4 digit | 69.5%                     | 19 |
+| Ranked, 5–6 digit | 64.1%                     | 17 |
+| Lapsed / casual / none | ~50% (at chance)          | 7 |
+
+Generated replays pass for human among non-expert observers, but ranked players
+detect them above chance. Expert scores look bimodal rather than uniformly
+shifted, several perfect 10/10 alongside near-chance results; suggesting
+detection relies on specific learnable artifacts rather than a diffuse
+impression. Harness, methodology and data: [`eval/ab_study/`](eval/ab_study/).
 
 ## Docker Setup
 
@@ -105,8 +123,6 @@ curl -LO https://github.com/AmineWallah/osunator/releases/download/0.1.0/best_mo
 mkdir -p out
 uv run osunator "path/to/your-map.osu" -o out
 ```
-
-[releases](https://github.com/AmineWallah/osunator/releases/tag/0.1.0) page and place it in the root of the repo.
 
 `uv sync` installs the dependencies and the project itself into a local
 virtual environment; the `osunator` command is the package's entry
