@@ -2,7 +2,7 @@
 Osunator is a replay generator for the rhythm game osu! that takes an .osu file as an input and outputs a replay file (.osr), written with TensorFlow.
 
 The primary goal of this project is to be a proof of concept for being able to replicate a human-like playstyle using an
-LSTM model. Provided with a dataset of as few as ~40 .osr files, the model can imitate legitimate player behaviors on 
+LSTM model. Provided with a dataset of as few as ~40 .osr files, the model could imitate legitimate player behaviors on 
 certain patterns (natural snapping on cross-screen jumps, smooth flowing on streams etc...). With that said, the ground
 truth used to evaluate the model is how closely it can replicate a human replay rather than actually performing decently
 at the game.
