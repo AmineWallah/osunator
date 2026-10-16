@@ -1,0 +1,62 @@
+{
+  "pair01": {
+    "a": "/static/clips/pair01_A.mp4",
+    "b": "/static/clips/pair01_B.mp4",
+    "a_is_human": false,
+    "map": "amaoto noise"
+  },
+  "pair02": {
+    "a": "/static/clips/pair02_A.mp4",
+    "b": "/static/clips/pair02_B.mp4",
+    "a_is_human": true,
+    "map": "burrito"
+  },
+  "pair03": {
+    "a": "/static/clips/pair03_A.mp4",
+    "b": "/static/clips/pair03_B.mp4",
+    "a_is_human": true,
+    "map": "my love"
+  },
+  "pair04": {
+    "a": "/static/clips/pair04_A.mp4",
+    "b": "/static/clips/pair04_B.mp4",
+    "a_is_human": true,
+    "map": "no title"
+  },
+  "pair05": {
+    "a": "/static/clips/pair05_A.mp4",
+    "b": "/static/clips/pair05_B.mp4",
+    "a_is_human": false,
+    "map": "packet hero"
+  },
+  "pair06": {
+    "a": "/static/clips/pair06_A.mp4",
+    "b": "/static/clips/pair06_B.mp4",
+    "a_is_human": false,
+    "map": "replica"
+  },
+  "pair07": {
+    "a": "/static/clips/pair07_A.mp4",
+    "b": "/static/clips/pair07_B.mp4",
+    "a_is_human": false,
+    "map": "sakura no uta"
+  },
+  "pair08": {
+    "a": "/static/clips/pair08_A.mp4",
+    "b": "/static/clips/pair08_B.mp4",
+    "a_is_human": true,
+    "map": "super nuko world"
+  },
+  "pair09": {
+    "a": "/static/clips/pair09_A.mp4",
+    "b": "/static/clips/pair09_B.mp4",
+    "a_is_human": true,
+    "map": "weenywalker"
+  },
+  "pair10": {
+    "a": "/static/clips/pair10_A.mp4",
+    "b": "/static/clips/pair10_B.mp4",
+    "a_is_human": true,
+    "map": "words i never said"
+  }
+}
