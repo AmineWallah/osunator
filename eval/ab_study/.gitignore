@@ -1,5 +1,4 @@
 # study secrets
-pairs.json
 tokens.json
 
 # data
@@ -16,3 +15,4 @@ test.py
 
 !requirements.txt
 !results-final.txt
+!study_anonymized.db
